@@ -13,6 +13,7 @@
 import { siteConfig } from "@/config/site";
 import ThemeToggle from "@/components/ThemeToggle.svelte";
 import SearchBar from "@/components/search/SearchBar.svelte";
+import MusicPlayer from "@/components/music/MusicPlayer.svelte";
 import "@/styles/global.css";
 
 /** 页面级 props */
@@ -166,6 +167,17 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
         </p>
       </div>
     </footer>
+
+    <!-- 音乐播放器（SSR 安全，仅客户端加载） -->
+    {siteConfig.music.enabled && (
+      <MusicPlayer
+        client:visible
+        volume={siteConfig.music.defaultVolume}
+        autoplay={siteConfig.music.autoplay}
+        showLrc={siteConfig.music.showLrc}
+        music={[]}
+      />
+    )}
   </body>
 </html>
 
