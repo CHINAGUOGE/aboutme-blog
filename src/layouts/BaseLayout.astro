@@ -1,0 +1,329 @@
+---
+/**
+ * BaseLayout.astro
+ * 全站基础布局 — 所有页面的根 Layout
+ *
+ * 职责：
+ *   - HTML head（meta、字体、CSS）
+ *   - 主题初始化脚本（防闪烁，同步执行）
+ *   - 页头 / 页脚骨架
+ *   - CSS 变量注入
+ */
+
+import { siteConfig } from "@/config/site";
+import ThemeToggle from "@/components/ThemeToggle.svelte";
+import "@/styles/global.css";
+
+/** 页面级 props */
+interface Props {
+  /** 页面标题（会拼接站点标题） */
+  title?: string;
+  /** 页面描述 */
+  description?: string;
+  /** 页面级 OG 图片 */
+  ogImage?: string;
+  /** 是否为文章页（影响布局宽度） */
+  isPost?: boolean;
+}
+
+const {
+  title,
+  description = siteConfig.description,
+  ogImage,
+  isPost = false,
+} = Astro.props;
+
+/** 拼接完整标题 */
+const fullTitle = title
+  ? `${title} — ${siteConfig.title}`
+  : `${siteConfig.title} — ${siteConfig.subtitle}`;
+
+/** 当前页面 URL */
+const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
+---
+
+<!doctype html>
+<html lang={siteConfig.lang} data-theme="light">
+  <head>
+    <!-- 基础 meta -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO -->
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL.href} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL.href} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Google Fonts 预连接 + 字体加载 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!--
+      主题初始化脚本（同步，阻塞渲染）
+      在页面加载前读取 localStorage，设置 data-theme，防止闪烁
+    -->
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = stored || (prefersDark ? "dark" : "light");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          // localStorage 不可用时静默失败
+        }
+      })();
+    </script>
+
+    <slot name="head" />
+  </head>
+
+  <body>
+    <!-- ============================================================
+         页头
+         ============================================================ -->
+    <header class="site-header">
+      <nav class="site-nav">
+        <a href="/" class="site-logo" aria-label="返回首页">
+          <span class="site-logo-icon">🐦</span>
+          <span class="site-logo-text">{siteConfig.author.name}</span>
+        </a>
+
+        <ul class="nav-links">
+          {siteConfig.navItems.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class:list={["nav-link", { active: Astro.url.pathname === item.href }]}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <div class="nav-actions">
+          <ThemeToggle client:load />
+        </div>
+      </nav>
+    </header>
+
+    <!-- ============================================================
+         主内容区
+         ============================================================ -->
+    <main class:list={["site-main", { "max-w-prose": isPost }]}>
+      <slot />
+    </main>
+
+    <!-- ============================================================
+         页脚
+         ============================================================ -->
+    <footer class="site-footer">
+      <div class="footer-content">
+        <p class="footer-copyright">
+          &copy; {new Date().getFullYear()} {siteConfig.author.name}
+          <span class="footer-separator">·</span>
+          <a href={siteConfig.site}>{siteConfig.title}</a>
+        </p>
+
+        {siteConfig.icp && (
+          <p class="footer-icp">
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">
+              {siteConfig.icp}
+            </a>
+          </p>
+        )}
+
+        <p class="footer-powered">
+          Powered by <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
+          <span class="footer-separator">·</span>
+          Oniichan Style ✨
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<!-- ============================================================
+     布局样式（作用域内）
+     ============================================================ -->
+<style>
+  /* ---- 页头 ---- */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: var(--color-theme-card);
+    border-bottom: 1px solid var(--color-theme-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition:
+      background-color var(--transition-normal) var(--transition-easing),
+      border-color var(--transition-normal) var(--transition-easing);
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.75rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .site-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--color-theme-text);
+    font-weight: 700;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  .site-logo:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .site-logo-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    display: inline-block;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--radius-base);
+    text-decoration: none;
+    color: var(--color-theme-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition:
+      color var(--transition-fast) var(--transition-easing),
+      background-color var(--transition-fast) var(--transition-easing);
+  }
+
+  .nav-link:hover {
+    color: var(--color-theme-accent);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 8%, transparent);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .nav-link.active {
+    color: var(--color-theme-accent);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 12%, transparent);
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* ---- 主内容区 ---- */
+  .site-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    min-height: calc(100vh - 10rem);
+  }
+
+  .site-main.max-w-prose {
+    max-width: 48rem;
+  }
+
+  /* ---- 页脚 ---- */
+  .site-footer {
+    border-top: 1px solid var(--color-theme-border);
+    background-color: var(--color-theme-card);
+    transition:
+      background-color var(--transition-normal) var(--transition-easing),
+      border-color var(--transition-normal) var(--transition-easing);
+  }
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--color-theme-muted);
+  }
+
+  .footer-content p {
+    margin: 0.25rem 0;
+  }
+
+  .footer-content a {
+    color: var(--color-theme-accent);
+    text-decoration: none;
+  }
+
+  .footer-content a:hover {
+    text-decoration: underline;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .footer-separator {
+    margin: 0 0.375rem;
+    opacity: 0.5;
+  }
+
+  .footer-icp {
+    font-size: 0.75rem;
+  }
+
+  .footer-powered {
+    font-size: 0.75rem;
+  }
+
+  /* ---- 响应式 ---- */
+  @media (max-width: 640px) {
+    .site-nav {
+      padding: 0.625rem 1rem;
+    }
+
+    .nav-links {
+      gap: 0;
+    }
+
+    .nav-link {
+      padding: 0.375rem 0.625rem;
+      font-size: 0.875rem;
+    }
+
+    .site-main {
+      padding: 1.25rem 1rem;
+    }
+  }
+</style>
