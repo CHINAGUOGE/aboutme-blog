@@ -1,0 +1,450 @@
+---
+/**
+ * about.astro
+ * 关于我页面
+ *
+ * 展示作者信息、社交链接、时间轴。
+ * 数据来自 site.config.ts 和 friends.yaml。
+ */
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Timeline from "@/components/Timeline.astro";
+import { siteConfig } from "@/config/site";
+
+/** 社交平台图标映射 */
+const socialIcons: Record<string, string> = {
+  github: "🐙",
+  twitter: "🐦",
+  bilibili: "📺",
+  email: "📧",
+  rss: "📡",
+};
+
+/** 社交平台名称映射 */
+const socialNames: Record<string, string> = {
+  github: "GitHub",
+  twitter: "Twitter",
+  bilibili: "Bilibili",
+  email: "Email",
+  rss: "RSS",
+};
+
+/** 排序后的社交链接 */
+const sortedSocials = [...siteConfig.socials].sort((a, b) => a.order - b.order);
+---
+
+<BaseLayout title="关于" description={`关于${siteConfig.author.name} — ${siteConfig.author.bio}`}>
+  <div class="about-page">
+    <!-- 个人信息卡片 -->
+    <section class="profile-section">
+      <div class="profile-card">
+        <div class="profile-main">
+          <div class="profile-avatar-wrapper">
+            <img
+              src={siteConfig.author.avatar}
+              alt={siteConfig.author.name}
+              class="profile-avatar"
+              width="160"
+              height="160"
+              loading="eager"
+            />
+          </div>
+
+          <div class="profile-info">
+            <h1 class="profile-name">{siteConfig.author.name}</h1>
+            <p class="profile-bio">{siteConfig.author.bio}</p>
+
+            {siteConfig.author.location && (
+              <p class="profile-location">
+                <span class="profile-location-icon">📍</span>
+                {siteConfig.author.location}
+              </p>
+            )}
+
+            <!-- 社交链接 -->
+            <div class="profile-socials">
+              {sortedSocials.map((social) => (
+                <a
+                  href={social.url}
+                  class="social-link"
+                  target={social.platform === "email" ? undefined : "_blank"}
+                  rel={social.platform === "email" ? undefined : "noopener noreferrer"}
+                  title={socialNames[social.platform] || social.platform}
+                >
+                  <span class="social-icon">{socialIcons[social.platform] || "🔗"}</span>
+                  <span class="social-name">{socialNames[social.platform] || social.platform}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 站点介绍 -->
+    <section class="about-section">
+      <h2 class="section-title">🛠️ 关于本站</h2>
+      <div class="about-card">
+        <div class="tech-grid">
+          <div class="tech-item">
+            <span class="tech-icon">🚀</span>
+            <div>
+              <strong>Astro 4.x</strong>
+              <span>静态站点框架</span>
+            </div>
+          </div>
+          <div class="tech-item">
+            <span class="tech-icon">⚡</span>
+            <div>
+              <strong>Svelte 4.x</strong>
+              <span>交互组件</span>
+            </div>
+          </div>
+          <div class="tech-item">
+            <span class="tech-icon">🎨</span>
+            <div>
+              <strong>Tailwind CSS 4.x</strong>
+              <span>原子化样式</span>
+            </div>
+          </div>
+          <div class="tech-item">
+            <span class="tech-icon">☁️</span>
+            <div>
+              <strong>Cloudflare Pages</strong>
+              <span>全球部署</span>
+            </div>
+          </div>
+          <div class="tech-item">
+            <span class="tech-icon">🔍</span>
+            <div>
+              <strong>Pagefind</strong>
+              <span>全文搜索</span>
+            </div>
+          </div>
+          <div class="tech-item">
+            <span class="tech-icon">🎵</span>
+            <div>
+              <strong>APlayer</strong>
+              <span>音乐播放器</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 时间轴 -->
+    {siteConfig.timeline.length > 0 && (
+      <section class="about-section">
+        <h2 class="section-title">📅 时间轴</h2>
+        <div class="timeline-wrapper">
+          <Timeline events={siteConfig.timeline} />
+        </div>
+      </section>
+    )}
+
+    <!-- 联系方式 -->
+    <section class="about-section">
+      <h2 class="section-title">📬 联系我</h2>
+      <div class="contact-card">
+        <p class="contact-desc">
+          如果你有任何问题、建议或合作意向，欢迎通过以下方式联系我：
+        </p>
+        <div class="contact-links">
+          {siteConfig.socials.find((s) => s.platform === "email") && (
+            <a
+              href={siteConfig.socials.find((s) => s.platform === "email")!.url}
+              class="contact-btn"
+            >
+              📧 发送邮件
+            </a>
+          )}
+          {siteConfig.socials.find((s) => s.platform === "github") && (
+            <a
+              href={siteConfig.socials.find((s) => s.platform === "github")!.url}
+              class="contact-btn"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              🐙 GitHub
+            </a>
+          )}
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .about-page {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* ---- 个人信息卡片 ---- */
+  .profile-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .profile-card {
+    padding: 2.5rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+  }
+
+  .profile-main {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .profile-avatar-wrapper {
+    flex-shrink: 0;
+  }
+
+  .profile-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 4px solid var(--color-theme-accent);
+    box-shadow: 0 8px 30px color-mix(in srgb, var(--color-theme-accent) 20%, transparent);
+    object-fit: cover;
+    transition:
+      transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 300ms ease;
+  }
+
+  .profile-avatar:hover {
+    transform: scale(1.05) rotate(3deg);
+    box-shadow: 0 12px 40px color-mix(in srgb, var(--color-theme-accent) 30%, transparent);
+  }
+
+  .profile-info {
+    flex: 1;
+  }
+
+  .profile-name {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--color-theme-text);
+  }
+
+  .profile-bio {
+    font-size: 1.0625rem;
+    color: var(--color-theme-muted);
+    margin: 0 0 0.75rem;
+    line-height: 1.6;
+  }
+
+  .profile-location {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-theme-muted);
+    margin: 0 0 1.25rem;
+  }
+
+  .profile-location-icon {
+    font-size: 1rem;
+  }
+
+  /* 社交链接 */
+  .profile-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+
+  .social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--radius-base);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 8%, transparent);
+    color: var(--color-theme-text);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition:
+      background-color var(--transition-fast) ease,
+      color var(--transition-fast) ease;
+  }
+
+  .social-link:hover {
+    background-color: color-mix(in srgb, var(--color-theme-accent) 16%, transparent);
+    color: var(--color-theme-accent);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .social-icon {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  /* ---- 通用 Section ---- */
+  .about-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 1.25rem;
+    color: var(--color-theme-text);
+  }
+
+  /* ---- 技术栈 ---- */
+  .about-card {
+    padding: 1.75rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .tech-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-base);
+    transition: background-color var(--transition-fast) ease;
+  }
+
+  .tech-item:hover {
+    background-color: color-mix(in srgb, var(--color-theme-accent) 6%, transparent);
+  }
+
+  .tech-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .tech-item div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tech-item strong {
+    font-size: 0.9375rem;
+    color: var(--color-theme-text);
+  }
+
+  .tech-item span {
+    font-size: 0.8125rem;
+    color: var(--color-theme-muted);
+  }
+
+  /* ---- 时间轴 ---- */
+  .timeline-wrapper {
+    padding: 1rem 0;
+  }
+
+  /* ---- 联系方式 ---- */
+  .contact-card {
+    padding: 1.75rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+  }
+
+  .contact-desc {
+    font-size: 0.9375rem;
+    color: var(--color-theme-muted);
+    margin: 0 0 1.25rem;
+    line-height: 1.6;
+  }
+
+  .contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-base);
+    background-color: var(--color-theme-accent);
+    color: white;
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    transition:
+      transform var(--transition-fast) ease,
+      box-shadow var(--transition-fast) ease,
+      background-color var(--transition-fast) ease;
+  }
+
+  .contact-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 85%, black);
+  }
+
+  .contact-btn:active {
+    transform: translateY(0);
+  }
+
+  /* ---- 响应式 ---- */
+  @media (max-width: 640px) {
+    .profile-card {
+      padding: 1.5rem;
+    }
+
+    .profile-main {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1.5rem;
+    }
+
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+    }
+
+    .profile-name {
+      font-size: 1.5rem;
+    }
+
+    .profile-location {
+      justify-content: center;
+    }
+
+    .profile-socials {
+      justify-content: center;
+    }
+
+    .about-card {
+      padding: 1.25rem;
+    }
+
+    .tech-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .contact-card {
+      padding: 1.25rem;
+    }
+
+    .contact-links {
+      flex-direction: column;
+    }
+
+    .contact-btn {
+      justify-content: center;
+    }
+  }
+</style>
