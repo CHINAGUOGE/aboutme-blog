@@ -1,0 +1,149 @@
+/*
+ * 全局样式 — Oniichan Style 主题系统
+ *
+ * 色彩引擎通过 CSS 自定义属性实现：
+ *   --theme-hue / --theme-sat / --theme-light  由 scripts/color-extract.ts 生成
+ *   --color-* 衍生色由 theme.css 注入
+ *
+ * 暗色模式通过 [data-theme="dark"] 选择器切换
+ */
+
+@import "tailwindcss";
+
+/* ============================================================
+   Tailwind 4.x 主题层：自定义设计令牌
+   ============================================================ */
+@theme {
+  /* 圆角规范 */
+  --radius-base: 16px;
+  --radius-card: 18px;
+  --radius-input: 12px;
+
+  /* 字体栈 */
+  --font-sans: "M PLUS Rounded 1c", "Noto Sans SC", system-ui, sans-serif;
+
+  /* 主题色 — 由 CSS 变量驱动，color-extract.ts 生成 */
+  --color-theme-bg: var(--color-bg, #fff5f8);
+  --color-theme-card: var(--color-card, #ffffff);
+  --color-theme-text: var(--color-text, #4a3548);
+  --color-theme-accent: var(--color-accent, #e8879b);
+  --color-theme-muted: var(--color-muted, #c4a7b3);
+  --color-theme-border: var(--color-border, #f0d4de);
+}
+
+/* ============================================================
+   CSS 自定义属性（默认值 / 亮色模式）
+   ============================================================ */
+:root {
+  /* 色彩引擎输出变量 — color-extract.ts 会覆盖这些值 */
+  --theme-hue: 340;
+  --theme-sat: 60%;
+  --theme-light: 95%;
+
+  /* 衍生色（默认 cute pink palette） */
+  --color-bg: hsl(340, 60%, 95%);
+  --color-card: hsl(340, 40%, 100%);
+  --color-text: hsl(340, 30%, 25%);
+  --color-accent: hsl(340, 65%, 70%);
+  --color-muted: hsl(340, 25%, 60%);
+  --color-border: hsl(340, 45%, 88%);
+
+  /* 动画时间 */
+  --transition-fast: 200ms;
+  --transition-normal: 300ms;
+  --transition-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ============================================================
+   暗色模式
+   ============================================================ */
+[data-theme="dark"] {
+  /* 暗色模式：降低饱和度 + 提升亮度，保持"可爱"不压抑 */
+  --color-bg: hsl(var(--theme-hue), 15%, 12%);
+  --color-card: hsl(var(--theme-hue), 12%, 18%);
+  --color-text: hsl(var(--theme-hue), 20%, 88%);
+  --color-accent: hsl(var(--theme-hue), 50%, 65%);
+  --color-muted: hsl(var(--theme-hue), 15%, 50%);
+  --color-border: hsl(var(--theme-hue), 10%, 25%);
+}
+
+/* ============================================================
+   全局基础样式
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-theme-bg);
+  color: var(--color-theme-text);
+  transition:
+    background-color var(--transition-normal) var(--transition-easing),
+    color var(--transition-normal) var(--transition-easing);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   交互反馈（悬停 + 点击）
+   ============================================================ */
+a,
+button,
+[role="button"] {
+  transition:
+    transform var(--transition-fast) var(--transition-easing),
+    box-shadow var(--transition-fast) var(--transition-easing),
+    color var(--transition-fast) var(--transition-easing);
+}
+
+a:hover,
+button:hover,
+[role="button"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1),
+              0 4px 10px -3px rgba(0, 0, 0, 0.06);
+}
+
+a:active,
+button:active,
+[role="button"]:active {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   滚动条美化（Webkit）
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-muted);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent);
+}
+
+/* ============================================================
+   选中文本高亮
+   ============================================================ */
+::selection {
+  background-color: var(--color-accent);
+  color: white;
+}

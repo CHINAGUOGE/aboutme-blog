@@ -1,0 +1,36 @@
+{
+  "name": "guogepige-blog",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "果鸽的个人博客 — Oniichan Style",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "bash build.sh",
+    "build:astro": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "postinstall": "husky || true"
+  },
+  "dependencies": {
+    "astro": "^4.16.0",
+    "@astrojs/svelte": "^4.0.0",
+    "@astrojs/rss": "^4.0.0",
+    "svelte": "^4.2.0",
+    "sharp": "^0.33.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^15.2.0",
+    "tsx": "^4.19.0",
+    "colorthief": "^2.4.0",
+    "zod": "^3.23.0"
+  },
+  "lint-staged": {
+    "*.{ts,mjs,astro}": [
+      "pnpm validate-config"
+    ]
+  }
+}
