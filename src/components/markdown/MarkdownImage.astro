@@ -1,0 +1,66 @@
+---
+/**
+ * MarkdownImage.astro
+ * Markdown 自定义图片组件
+ *
+ * 替代默认的 <img> 渲染：
+ *   - 原生 loading="lazy" 懒加载
+ *   - 自动解码 async
+ *   - 可选 figcaption（来自 alt 文本）
+ *   - 圆角卡片样式
+ */
+
+interface Props {
+  src: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+}
+
+const { src, alt, width, height } = Astro.props;
+
+/** 是否显示 figcaption（alt 非空且不等于 src） */
+const showCaption = alt && alt !== src && !alt.startsWith("http");
+---
+
+<figure class="markdown-figure">
+  <img
+    src={src}
+    alt={alt || ""}
+    width={width}
+    height={height}
+    loading="lazy"
+    decoding="async"
+    class="markdown-img"
+  />
+  {showCaption && <figcaption class="markdown-caption">{alt}</figcaption>}
+</figure>
+
+<style>
+  .markdown-figure {
+    margin: 1.5rem 0;
+    text-align: center;
+  }
+
+  .markdown-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-card);
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.1);
+    transition:
+      transform var(--transition-fast) var(--transition-easing),
+      box-shadow var(--transition-fast) var(--transition-easing);
+  }
+
+  .markdown-img:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.15);
+  }
+
+  .markdown-caption {
+    margin-top: 0.625rem;
+    font-size: 0.8125rem;
+    color: var(--color-theme-muted);
+    font-style: italic;
+  }
+</style>

@@ -1,6 +1,8 @@
 import { defineConfig } from "astro/config";
 import svelte from "@astrojs/svelte";
+import mdx from "@astrojs/mdx";
 import tailwindcss from "@tailwindcss/vite";
+import rehypeLazyImages from "./src/plugins/rehype-lazy-images.mjs";
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,6 +13,8 @@ export default defineConfig({
   integrations: [
     // Svelte Islands 支持
     svelte(),
+    // MDX 支持（可在 Markdown 中使用组件）
+    mdx(),
   ],
 
   vite: {
@@ -26,22 +30,37 @@ export default defineConfig({
 
   // 构建配置
   build: {
-    // 合并 head 脚本
     inlineStylesheets: "auto",
   },
 
   // Markdown 渲染配置
   markdown: {
-    // 使用 Shiki 代码高亮（后续 Task 2.1 详细配置）
+    // Shiki 代码高亮 — 双主题适配亮/暗模式
     shikiConfig: {
-      theme: "github-dark",
+      themes: {
+        light: "github-light",
+        dark: "github-dark",
+      },
+      // 不使用默认颜色，让 CSS 变量控制
+      defaultColor: false,
+      // 自动换行
       wrap: true,
     },
+    // 自定义图片渲染组件
+    remarkPlugins: [],
+    rehypePlugins: [
+      // 图片懒加载
+      rehypeLazyImages,
+    ],
   },
 
   // 图片优化
   image: {
-    // 允许远程图片域名（后续可按需扩展）
-    remotePatterns: [],
+    // 允许远程图片域名
+    remotePatterns: [
+      {
+        protocol: "https",
+      },
+    ],
   },
 });
