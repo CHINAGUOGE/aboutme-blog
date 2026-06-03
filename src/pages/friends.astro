@@ -1,0 +1,261 @@
+---
+/**
+ * friends.astro
+ * 友链页 — YAML 数据驱动
+ *
+ * 友链数据存储在 src/data/friends.yaml
+ * 按分组展示，支持自动分组。
+ */
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import FriendCard from "@/components/FriendCard.astro";
+import { siteConfig } from "@/config/site";
+
+/** 导入 YAML 友链数据 */
+import friendsData from "@/data/friends.yaml";
+
+/** 友链条目类型 */
+interface FriendItem {
+  name: string;
+  avatar: string;
+  url: string;
+  description?: string;
+}
+
+/** 解析 YAML 数据为带分组的列表 */
+const friendGroups: { group: string; friends: FriendItem[] }[] = [];
+
+for (const [group, items] of Object.entries(friendsData)) {
+  if (Array.isArray(items)) {
+    friendGroups.push({
+      group,
+      friends: items as FriendItem[],
+    });
+  }
+}
+
+/** 总友链数 */
+const totalFriends = friendGroups.reduce((sum, g) => sum + g.friends.length, 0);
+---
+
+<BaseLayout title="友链" description={`${siteConfig.author.name}的友情链接 — 共 ${totalFriends} 个`}>
+  <div class="friends-page">
+    <!-- 页面头部 -->
+    <header class="friends-header">
+      <h1 class="friends-title">🤝 友链</h1>
+      <p class="friends-subtitle">
+        这些是果鸽的朋友们，欢迎互相交换链接！
+      </p>
+      <p class="friends-count">共 {totalFriends} 个友链</p>
+    </header>
+
+    <!-- 友链分组 -->
+    {friendGroups.map((group) => (
+      <section class="friend-group">
+        <h2 class="group-title">{group.group}</h2>
+        <div class="friend-grid">
+          {group.friends.map((friend, index) => (
+            <FriendCard
+              name={friend.name}
+              avatar={friend.avatar}
+              url={friend.url}
+              description={friend.description}
+              index={index}
+            />
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <!-- 申请友链 -->
+    <section class="friends-apply">
+      <div class="apply-card">
+        <h2 class="apply-title">📬 申请友链</h2>
+        <p class="apply-desc">
+          如果你也想和果鸽交换链接，请满足以下条件：
+        </p>
+        <ul class="apply-rules">
+          <li>✅ 网站可以正常访问</li>
+          <li>✅ 内容健康、有原创内容</li>
+          <li>✅ 已在你的网站添加了果鸽的链接</li>
+          <li>❌ 不接受违规/采集站</li>
+        </ul>
+        <p class="apply-hint">
+          通过
+          <a href={siteConfig.socials.find((s) => s.platform === "email")?.url || "#"}>
+            邮件
+          </a>
+          或
+          <a href={siteConfig.socials.find((s) => s.platform === "github")?.url || "#"}>
+            GitHub
+          </a>
+          联系我即可 ✨
+        </p>
+
+        <div class="apply-code">
+          <p class="apply-code-title">📋 参考格式：</p>
+          <pre class="apply-code-block"><code>- name: "你的名字"
+  avatar: "头像URL"
+  url: "博客URL"
+  description: "一句话简介"</code></pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .friends-page {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* 页面头部 */
+  .friends-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .friends-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--color-theme-text);
+  }
+
+  .friends-subtitle {
+    font-size: 1rem;
+    color: var(--color-theme-muted);
+    margin: 0;
+  }
+
+  .friends-count {
+    font-size: 0.875rem;
+    color: var(--color-theme-muted);
+    margin: 0.375rem 0 0;
+    opacity: 0.7;
+  }
+
+  /* 友链分组 */
+  .friend-group {
+    margin-bottom: 2.5rem;
+  }
+
+  .group-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    color: var(--color-theme-text);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-theme-border);
+  }
+
+  .friend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  /* 申请友链 */
+  .friends-apply {
+    margin-top: 1rem;
+  }
+
+  .apply-card {
+    padding: 2rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+  }
+
+  .apply-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    color: var(--color-theme-text);
+  }
+
+  .apply-desc {
+    font-size: 0.9375rem;
+    color: var(--color-theme-muted);
+    margin: 0 0 1rem;
+  }
+
+  .apply-rules {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .apply-rules li {
+    font-size: 0.9375rem;
+    color: var(--color-theme-text);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-base);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 5%, transparent);
+  }
+
+  .apply-hint {
+    font-size: 0.9375rem;
+    color: var(--color-theme-muted);
+    margin: 0 0 1.5rem;
+  }
+
+  .apply-hint a {
+    color: var(--color-theme-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .apply-hint a:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .apply-code {
+    margin-top: 1rem;
+  }
+
+  .apply-code-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-theme-text);
+    margin: 0 0 0.5rem;
+  }
+
+  .apply-code-block {
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-base);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 6%, transparent);
+    border: 1px solid var(--color-theme-border);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: var(--color-theme-text);
+  }
+
+  .apply-code-block code {
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+  }
+
+  @media (max-width: 640px) {
+    .friends-title {
+      font-size: 1.5rem;
+    }
+
+    .friend-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .apply-card {
+      padding: 1.25rem;
+    }
+  }
+</style>

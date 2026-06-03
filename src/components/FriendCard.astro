@@ -1,0 +1,162 @@
+---
+/**
+ * FriendCard.astro
+ * 友链卡片组件
+ *
+ * 展示单个友链信息：头像、名称、简介、链接。
+ * 支持入场动画延迟。
+ */
+
+interface Props {
+  /** 友链名称 */
+  name: string;
+  /** 头像 URL */
+  avatar: string;
+  /** 博客链接 */
+  url: string;
+  /** 简介 */
+  description?: string;
+  /** 卡片索引（动画延迟） */
+  index?: number;
+}
+
+const { name, avatar, url, description, index = 0 } = Astro.props;
+---
+
+<a
+  href={url}
+  class="friend-card"
+  target="_blank"
+  rel="noopener noreferrer"
+  title={`${name}${description ? ` — ${description}` : ""}`}
+  style={`animation-delay: ${index * 80}ms`}
+>
+  <div class="friend-avatar-wrapper">
+    <img
+      src={avatar}
+      alt={name}
+      class="friend-avatar"
+      loading="lazy"
+      decoding="async"
+      width="64"
+      height="64"
+    />
+  </div>
+
+  <div class="friend-info">
+    <h3 class="friend-name">{name}</h3>
+    {description && <p class="friend-desc">{description}</p>}
+  </div>
+
+  <div class="friend-arrow">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="7 7 17 7 17 17" />
+    </svg>
+  </div>
+</a>
+
+<style>
+  .friend-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+    text-decoration: none;
+    color: var(--color-theme-text);
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fade-up 0.4s var(--transition-easing) forwards;
+    transition:
+      transform var(--transition-fast) var(--transition-easing),
+      box-shadow var(--transition-fast) var(--transition-easing),
+      border-color var(--transition-fast) var(--transition-easing);
+  }
+
+  .friend-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-theme-accent);
+  }
+
+  @keyframes fade-up {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 头像 */
+  .friend-avatar-wrapper {
+    flex-shrink: 0;
+  }
+
+  .friend-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 2px solid var(--color-theme-border);
+    object-fit: cover;
+    transition: border-color var(--transition-fast) ease;
+  }
+
+  .friend-card:hover .friend-avatar {
+    border-color: var(--color-theme-accent);
+  }
+
+  /* 信息 */
+  .friend-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .friend-name {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-theme-text);
+  }
+
+  .friend-desc {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-theme-muted);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 箭头 */
+  .friend-arrow {
+    flex-shrink: 0;
+    color: var(--color-theme-muted);
+    transition:
+      color var(--transition-fast) ease,
+      transform var(--transition-fast) ease;
+  }
+
+  .friend-card:hover .friend-arrow {
+    color: var(--color-theme-accent);
+    transform: translate(2px, -2px);
+  }
+
+  @media (max-width: 640px) {
+    .friend-card {
+      padding: 0.875rem 1rem;
+    }
+
+    .friend-avatar {
+      width: 48px;
+      height: 48px;
+    }
+
+    .friend-name {
+      font-size: 0.9375rem;
+    }
+  }
+</style>
