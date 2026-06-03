@@ -68,7 +68,7 @@ const commentSchema = z.object({
   repo: z
     .string()
     .regex(/^[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+$/, "格式：owner/repo")
-    .default("guogepige/blog-comments"),
+    .or(z.literal("")).default(""),
   /** Giscus Repository ID */
   repoId: z.string().default(""),
   /** Discussion 分类 */
@@ -202,32 +202,30 @@ export type TimelineEvent = z.infer<typeof timelineEventSchema>;
    ============================================================ */
 
 export const siteConfig = siteConfigSchema.parse({
-  title: "Guoge's Blog",
-  subtitle: "咕咕咕咕咕咕咕咕咕",
-  description: "果鸽的博客，记录一些小事",
+  title: "果鸽的博客",
+  subtitle: "咕咕咕咕咕咕",
+  description: "果鸽的个人博客",
   lang: "zh-CN",
   site: "https://me.51320721.xyz",
   base: "/",
 
   author: {
     name: "果鸽",
-    avatar: "/avatar.png",
-    bio: "一只MTX鸽子，无证HRT中",
+    avatar: "/avatar.webp",
+    bio: "MTX/流体性别，无证含糖中",
     location: "果鸽星",
   },
 
   socials: [
     { platform: "github", url: "https://github.com/CHINAGUOGE", order: 0 },
-    { platform: "bilibili", url: "https://space.bilibili.com/384971536", order: 1 },
-    { platform: "email", url: "mailto:1518186080@qq.com", order: 2 },
-    { platform: "rss", url: "/rss.xml", order: 3 },
+    { platform: "bilibili", url: "https://space.bilibili.com/384971536", order: 1 }
   ],
 
   navItems: [
     { label: "首页", href: "/" },
     { label: "文章", href: "/blog" },
     { label: "友链", href: "/friends" },
-    { label: "关于", href: "/about" },
+    { label: "关于", href: "/about" }
   ],
 
   theme: {
@@ -245,8 +243,8 @@ export const siteConfig = siteConfigSchema.parse({
   },
 
   comment: {
-    enabled: true,
-    repo: "CHINAGUOGE/aboutme-blog",
+    enabled: false,
+    repo: "",
     repoId: "",
     category: "Announcements",
     categoryId: "",
@@ -260,5 +258,10 @@ export const siteConfig = siteConfigSchema.parse({
 
   friends: [],
 
-  timeline: [],
+  timeline: [
+
+  ],
+
+  icp: "鸽ICP备0000001号",
+  police: undefined,
 });
