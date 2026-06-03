@@ -27,6 +27,8 @@ interface Props {
   prevPost?: { slug: string; title: string } | null;
   /** 下一篇 */
   nextPost?: { slug: string; title: string } | null;
+  /** 是否为加密文章 */
+  isEncrypted?: boolean;
 }
 
 const {
@@ -39,6 +41,7 @@ const {
   updatedDate,
   prevPost = null,
   nextPost = null,
+  isEncrypted = false,
 } = Astro.props;
 
 /** 格式化日期 */
@@ -97,6 +100,15 @@ function formatDate(dateStr: string): string {
     <div class="post-content prose">
       <slot />
     </div>
+
+    <!-- 加密内容水合脚本（仅加密文章加载） -->
+    {isEncrypted && (
+      <script>
+        import("@/scripts/hydrate-encrypted").then(({ hydrateEncryptedContent }) => {
+          hydrateEncryptedContent();
+        });
+      </script>
+    )}
 
     <!-- 文章底部导航 -->
     <nav class="post-nav">

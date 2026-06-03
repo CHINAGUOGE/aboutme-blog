@@ -1,0 +1,28 @@
+---
+/**
+ * EncryptedContent.astro
+ * 加密内容 Astro 包装组件
+ *
+ * 在文章详情页中检测 <encrypted-content> 自定义元素，
+ * 并替换为 Svelte 解密组件。
+ *
+ * 用法：在 BlogPostLayout 中替代普通 <slot />
+ */
+
+import EncryptedContentSvelte from "./EncryptedContent.svelte";
+
+interface Props {
+  /** 是否为加密文章 */
+  isEncrypted: boolean;
+  /** 加密数据 JSON 字符串 */
+  encryptedData?: string;
+}
+
+const { isEncrypted, encryptedData = "" } = Astro.props;
+---
+
+{isEncrypted ? (
+  <EncryptedContentSvelte client:load encryptedData={encryptedData} />
+) : (
+  <slot />
+)}

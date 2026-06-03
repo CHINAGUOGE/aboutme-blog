@@ -46,6 +46,7 @@ const { Content } = await render(post);
   updatedDate={post.data.updatedDate}
   prevPost={prevPost}
   nextPost={nextPost}
+  isEncrypted={!!post.data.password}
 >
   <Content />
 </BlogPostLayout>

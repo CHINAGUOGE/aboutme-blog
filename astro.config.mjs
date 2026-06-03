@@ -3,6 +3,7 @@ import svelte from "@astrojs/svelte";
 import mdx from "@astrojs/mdx";
 import tailwindcss from "@tailwindcss/vite";
 import rehypeLazyImages from "./src/plugins/rehype-lazy-images.mjs";
+import remarkEncrypt from "./src/plugins/remark-encrypt.mjs";
 
 // https://astro.build/config
 export default defineConfig({
@@ -47,7 +48,10 @@ export default defineConfig({
       wrap: true,
     },
     // 自定义图片渲染组件
-    remarkPlugins: [],
+    remarkPlugins: [
+      // 文章加密（仅对含 password 的文章生效）
+      remarkEncrypt,
+    ],
     rehypePlugins: [
       // 图片懒加载
       rehypeLazyImages,
