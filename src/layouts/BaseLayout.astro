@@ -66,6 +66,14 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    <!-- RSS Feed 自动发现 -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${siteConfig.title} RSS Feed`}
+      href="/rss.xml"
+    />
+
     <!-- Google Fonts 预连接 + 字体加载 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
