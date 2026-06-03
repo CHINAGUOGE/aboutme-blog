@@ -136,7 +136,7 @@ pnpm update-config
 ```typescript
 export const siteConfig = siteConfigSchema.parse({
   title: "果鸽的博客",
-  subtitle: "别当欧尼酱了！",
+  subtitle: "",
   description: "果鸽的个人博客",
   site: "https://blog.example.com",
   author: { name: "果鸽", bio: "..." },

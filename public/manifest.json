@@ -1,7 +1,7 @@
 {
   "name": "果鸽的博客",
   "short_name": "果鸽",
-  "description": "果鸽的个人博客 — 别当欧尼酱了！",
+  "description": "果鸽的个人博客",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fff5f8",
