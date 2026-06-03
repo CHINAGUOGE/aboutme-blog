@@ -93,8 +93,8 @@ const commentSchema = z.object({
 const friendLinkSchema = z.object({
   /** 名称 */
   name: z.string().min(1),
-  /** 头像 URL */
-  avatar: z.string().url(),
+  /** 头像 URL（支持绝对 URL 或相对路径） */
+  avatar: z.string().url().or(z.string().startsWith("/")),
   /** 博客链接 */
   url: z.string().url(),
   /** 简介 */
@@ -202,18 +202,18 @@ export type TimelineEvent = z.infer<typeof timelineEventSchema>;
    ============================================================ */
 
 export const siteConfig = siteConfigSchema.parse({
-  title: "果鸽的博客",
-  subtitle: "别当欧尼酱了！",
-  description: "果鸽的个人博客 — 记录开发日常与二次元生活",
+  title: "Guoge's Blog",
+  subtitle: "咕咕咕咕咕咕咕咕咕",
+  description: "果鸽的博客，记录一些小事",
   lang: "zh-CN",
-  site: "https://blog.guogepige.dev",
+  site: "https://me.51320721.xyz",
   base: "/",
 
   author: {
     name: "果鸽",
-    avatar: "/avatar.webp",
-    bio: "一只喜欢写代码和看番的鸽子 🐦",
-    location: "某颗星球",
+    avatar: "/avatar.png",
+    bio: "一只MTX鸽子，无证HRT中",
+    location: "果鸽星",
   },
 
   socials: [
@@ -231,7 +231,7 @@ export const siteConfig = siteConfigSchema.parse({
   ],
 
   theme: {
-    defaultMode: "light",
+    defaultMode: "system",
     wallpaperPath: "wallpaper.jpg",
     useExtractedColors: true,
   },
@@ -246,7 +246,7 @@ export const siteConfig = siteConfigSchema.parse({
 
   comment: {
     enabled: true,
-    repo: "guogepige/blog-comments",
+    repo: "CHINAGUOGE/aboutme-blog",
     repoId: "",
     category: "Announcements",
     categoryId: "",
@@ -260,17 +260,17 @@ export const siteConfig = siteConfigSchema.parse({
 
   friends: [
     {
-      name: "示例友链",
-      avatar: "https://api.dicebear.com/7.x/fun-emoji/svg?seed=example",
-      url: "https://example.com",
-      description: "这是一个示例友链",
-      group: "小伙伴们",
+      name: "W.S.S-Wiki",
+      avatar: "/wiki.png",
+      url: "https://wiki.51320721.xyz",
+      description: "我运营的Wiki",
+      group: "我的项目",
     },
   ],
 
   timeline: [
     {
-      date: "2024",
+      date: "2026",
       title: "开始写博客",
       description: "使用 Astro 搭建了这个可爱的博客 ✨",
     },
