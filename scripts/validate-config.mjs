@@ -4,8 +4,10 @@
  * validate-config.mjs
  * 校验 src/config/site.ts 是否符合 Zod Schema
  *
- * 当前为占位版本 — Task 1.3 将注入完整 Zod 校验逻辑。
- * 若配置文件不存在则静默通过，避免阻塞早期开发。
+ * 由 lint-staged 在 pre-commit 时自动执行，也可手动运行：
+ *   pnpm validate-config
+ *
+ * 注意：此脚本通过 tsx 执行，支持 TypeScript 导入。
  */
 
 import { existsSync } from "node:fs";
@@ -15,28 +17,35 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const configPath = resolve(__dirname, "../src/config/site.ts");
 
+// 配置文件不存在时静默通过
 if (!existsSync(configPath)) {
-  console.log("⏭️  src/config/site.ts not found — skipping validation (will be created in Task 1.3)");
+  console.log("⏭️  src/config/site.ts not found — skipping validation");
   process.exit(0);
 }
 
-// 配置文件存在时执行校验
 try {
-  const { siteConfigSchema } = await import("../src/config/site.ts");
-  const result = siteConfigSchema.safeParse(
-    (await import("../src/config/site.ts")).siteConfig
-  );
+  // tsx 支持直接导入 .ts 文件
+  const mod = await import("../src/config/site.ts");
+
+  if (!mod.siteConfigSchema || !mod.siteConfig) {
+    console.error("❌ src/config/site.ts 必须导出 siteConfigSchema 和 siteConfig");
+    process.exit(1);
+  }
+
+  // Zod parse 会在定义时已经校验过一次，这里显式再校验一次确保安全
+  const result = mod.siteConfigSchema.safeParse(mod.siteConfig);
 
   if (!result.success) {
-    console.error("❌ site.config validation failed:");
+    console.error("❌ site.config 校验失败:");
     for (const issue of result.error.issues) {
-      console.error(`  • ${issue.path.join(".")}: ${issue.message}`);
+      const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+      console.error(`  • ${path}: ${issue.message}`);
     }
     process.exit(1);
   }
 
-  console.log("✅ site.config is valid");
+  console.log("✅ site.config 校验通过");
 } catch (err) {
-  console.error("❌ Failed to load site.config:", err.message);
+  console.error("❌ 加载 site.config 失败:", err.message);
   process.exit(1);
 }
