@@ -13,6 +13,8 @@
     "prepare": "husky",
     "validate-config": "tsx scripts/validate-config.mjs",
     "validate-music": "tsx scripts/validate-music.mjs",
+    "optimize-assets": "tsx scripts/optimize-assets.mjs",
+    "extract-theme": "tsx scripts/color-extract.ts",
     "new-post": "node scripts/new-post.mjs"
   },
   "dependencies": {
