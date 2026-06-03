@@ -11,7 +11,7 @@
  */
 
 import { siteConfig } from "@/config/site";
-import { ClientRouter } from "astro:transitions/client";
+import { ViewTransitions } from "astro:transitions";
 import ThemeToggle from "@/components/ThemeToggle.svelte";
 import SearchBar from "@/components/search/SearchBar.svelte";
 import MusicPlayer from "@/components/music/MusicPlayer.svelte";
@@ -114,7 +114,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
     <slot name="head" />
 
     <!-- View Transitions（页面间平滑过渡） -->
-    <ClientRouter />
+    <ViewTransitions fallback="swap" />
   </head>
 
   <body>
@@ -142,8 +142,8 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
         </ul>
 
         <div class="nav-actions">
-          <SearchBar client:load />
-          <ThemeToggle client:load />
+          <SearchBar client:only="svelte" />
+          <ThemeToggle client:only="svelte" />
         </div>
       </nav>
     </header>
@@ -182,23 +182,19 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
       </div>
     </footer>
 
-    <!-- 音乐播放器（SSR 安全，仅客户端加载，跨页面持久化） -->
+    <!-- 音乐播放器（仅客户端加载） -->
     {siteConfig.music.enabled && (
-      <div transition:persist="music-player">
-        <MusicPlayer
-          client:visible
-          volume={siteConfig.music.defaultVolume}
-          autoplay={siteConfig.music.autoplay}
-          showLrc={siteConfig.music.showLrc}
-          music={[]}
-        />
-      </div>
+      <MusicPlayer
+        client:idle
+        volume={siteConfig.music.defaultVolume}
+        autoplay={siteConfig.music.autoplay}
+        showLrc={siteConfig.music.showLrc}
+        music={[]}
+      />
     )}
 
-    <!-- 键盘快捷键提示（按 ? 键显示，跨页面持久化） -->
-    <div transition:persist="keyboard-hints">
-      <KeyboardHints client:load />
-    </div>
+    <!-- 键盘快捷键提示（按 ? 键显示） -->
+    <KeyboardHints client:idle />
   </body>
 </html>
 

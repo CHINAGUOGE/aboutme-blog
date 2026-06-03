@@ -1,37 +1,25 @@
 ---
 /**
  * friends.astro
- * 友链页 — YAML 数据驱动
+ * 友链页
  *
- * 友链数据存储在 src/data/friends.yaml
+ * 友链数据存储在 src/data/friends.ts
  * 按分组展示，支持自动分组。
  */
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import FriendCard from "@/components/FriendCard.astro";
 import { siteConfig } from "@/config/site";
+import friendsData, { type FriendItem } from "@/data/friends";
 
-/** 导入 YAML 友链数据 */
-import friendsData from "@/data/friends.yaml";
-
-/** 友链条目类型 */
-interface FriendItem {
-  name: string;
-  avatar: string;
-  url: string;
-  description?: string;
-}
-
-/** 解析 YAML 数据为带分组的列表 */
+/** 解析数据为带分组的列表 */
 const friendGroups: { group: string; friends: FriendItem[] }[] = [];
 
 for (const [group, items] of Object.entries(friendsData)) {
-  if (Array.isArray(items)) {
-    friendGroups.push({
-      group,
-      friends: items as FriendItem[],
-    });
-  }
+  friendGroups.push({
+    group,
+    friends: items,
+  });
 }
 
 /** 总友链数 */

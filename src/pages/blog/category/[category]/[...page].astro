@@ -38,7 +38,7 @@ export async function getStaticPaths({ paginate }: { paginate: Function }) {
     const posts = await getPostsByCategory(categoryName);
     const paginated = paginate(posts, {
       pageSize: 10,
-      params: { category: encodeURIComponent(categoryName) },
+      params: { category: categoryName },
     });
     paths.push(...paginated);
   }

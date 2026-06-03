@@ -17,7 +17,7 @@ const socialLinkSchema = z.object({
   /** 平台名称 */
   platform: z.enum(["github", "twitter", "bilibili", "email", "rss"]),
   /** 链接地址 */
-  url: z.string().url().or(z.string().startsWith("mailto:")),
+  url: z.string().url().or(z.string().startsWith("mailto:")).or(z.string().startsWith("/")),
   /** 显示顺序，数字越小越靠前 */
   order: z.number().int().min(0).default(0),
 });

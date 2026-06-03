@@ -34,19 +34,31 @@
   /** Pagefind 实例 */
   let pagefind: any = null;
 
-  /** 加载 Pagefind JS */
+  /** 加载 Pagefind JS（通过 script 标签，避免 Vite 解析） */
   async function loadPagefind(): Promise<void> {
     if (pagefind) return;
 
     try {
-      // Pagefind 在构建时生成，运行时从 /pagefind/pagefind.js 加载
-      pagefind = await import(/* @vite-ignore */ "/pagefind/pagefind.js");
-      await pagefind.options({
-        highlightParam: "highlight",
-        showImages: false,
+      // Pagefind 在构建时生成，运行时通过 script 标签加载
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "/pagefind/pagefind.js";
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Pagefind script failed to load"));
+        document.head.appendChild(script);
       });
+
+      // @ts-ignore — Pagefind 在 window 上注册全局对象
+      pagefind = window.pagefind;
+      if (pagefind) {
+        await pagefind.options({
+          highlightParam: "highlight",
+          showImages: false,
+        });
+      }
     } catch {
-      console.warn("Pagefind not available — search disabled");
+      console.warn("Pagefind not available — search disabled (run build first)");
     }
   }
 

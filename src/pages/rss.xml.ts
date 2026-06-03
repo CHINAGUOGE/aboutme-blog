@@ -23,8 +23,6 @@ export async function GET(context: APIContext) {
     description: siteConfig.description,
     /** 站点 URL */
     site: context.site ?? siteConfig.site,
-    /** Feed 语言 */
-    customData: `<language>${siteConfig.lang}</language>`,
     /** 文章列表 */
     items: posts.map((post) => ({
       title: post.data.title,
@@ -41,12 +39,12 @@ export async function GET(context: APIContext) {
     xmlns: {
       atom: "http://www.w3.org/2005/Atom",
     },
-    /** `<atom:link>` 自引用 */
+    /** `<atom:link>` 自引用 + 元数据 */
     customData: [
       `<language>${siteConfig.lang}</language>`,
       `<atom:link href="${siteConfig.site}/rss.xml" rel="self" type="application/rss+xml" />`,
       `<lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
       `<generator>Astro + @astrojs/rss</generator>`,
-    ].join("\n"),
+    ].join("\n  "),
   });
 }
