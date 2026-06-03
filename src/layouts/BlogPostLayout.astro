@@ -1,0 +1,315 @@
+---
+/**
+ * BlogPostLayout.astro
+ * 文章详情页布局
+ *
+ * 包含：
+ *   - 文章头部（标题、日期、分类、标签）
+ *   - 文章正文（Markdown 渲染）
+ *   - 文章底部（上/下一篇导航）
+ *   - 评论区（Giscus）
+ */
+
+import BaseLayout from "./BaseLayout.astro";
+import GiscusComment from "@/components/comment/GiscusComment.svelte";
+import { siteConfig } from "@/config/site";
+
+/** 文章 Frontmatter */
+interface Props {
+  title: string;
+  pubDate: string;
+  description: string;
+  category?: string;
+  tags?: string[];
+  cover?: string;
+  updatedDate?: string;
+  /** 上一篇 */
+  prevPost?: { slug: string; title: string } | null;
+  /** 下一篇 */
+  nextPost?: { slug: string; title: string } | null;
+}
+
+const {
+  title,
+  pubDate,
+  description,
+  category = "未分类",
+  tags = [],
+  cover,
+  updatedDate,
+  prevPost = null,
+  nextPost = null,
+} = Astro.props;
+
+/** 格式化日期 */
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+---
+
+<BaseLayout title={title} description={description} isPost={true}>
+  <article class="post">
+    <!-- 文章头部 -->
+    <header class="post-header">
+      <div class="post-meta">
+        {category && (
+          <a href={`/blog/category/${encodeURIComponent(category)}`} class="post-category">
+            {category}
+          </a>
+        )}
+        <time class="post-date" datetime={pubDate}>
+          {formatDate(pubDate)}
+        </time>
+        {updatedDate && (
+          <span class="post-updated">
+            （更新于 {formatDate(updatedDate)}）
+          </span>
+        )}
+      </div>
+
+      <h1 class="post-title">{title}</h1>
+      <p class="post-description">{description}</p>
+
+      {tags.length > 0 && (
+        <div class="post-tags">
+          {tags.map((tag) => (
+            <a href={`/blog/tag/${encodeURIComponent(tag)}`} class="post-tag">
+              #{tag}
+            </a>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <!-- 封面图 -->
+    {cover && (
+      <div class="post-cover">
+        <img src={cover} alt={title} loading="eager" />
+      </div>
+    )}
+
+    <!-- 文章正文 -->
+    <div class="post-content prose">
+      <slot />
+    </div>
+
+    <!-- 文章底部导航 -->
+    <nav class="post-nav">
+      {prevPost ? (
+        <a href={`/blog/${prevPost.slug}`} class="post-nav-link post-nav-prev">
+          <span class="post-nav-label">← 上一篇</span>
+          <span class="post-nav-title">{prevPost.title}</span>
+        </a>
+      ) : (
+        <div />
+      )}
+
+      {nextPost ? (
+        <a href={`/blog/${nextPost.slug}`} class="post-nav-link post-nav-next">
+          <span class="post-nav-label">下一篇 →</span>
+          <span class="post-nav-title">{nextPost.title}</span>
+        </a>
+      ) : (
+        <div />
+      )}
+    </nav>
+
+    <!-- 评论区 -->
+    <section class="post-comments">
+      <GiscusComment
+        client:visible
+        repo={siteConfig.comment.repo}
+        repoId={siteConfig.comment.repoId}
+        category={siteConfig.comment.category}
+        categoryId={siteConfig.comment.categoryId}
+        mapping={siteConfig.comment.mapping}
+        strict={siteConfig.comment.strict}
+        reactionsEnabled={siteConfig.comment.reactionsEnabled}
+        emitMetadata={siteConfig.comment.emitMetadata}
+        inputPosition={siteConfig.comment.inputPosition}
+        lang={siteConfig.comment.lang}
+      />
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* 文章头部 */
+  .post-header {
+    margin-bottom: 2rem;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-theme-muted);
+  }
+
+  .post-category {
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--color-theme-accent) 12%, transparent);
+    color: var(--color-theme-accent);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    transition: background-color var(--transition-fast) ease;
+  }
+
+  .post-category:hover {
+    background-color: color-mix(in srgb, var(--color-theme-accent) 20%, transparent);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .post-date {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .post-updated {
+    opacity: 0.7;
+  }
+
+  .post-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 0.75rem;
+    color: var(--color-theme-text);
+  }
+
+  .post-description {
+    font-size: 1.125rem;
+    color: var(--color-theme-muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .post-tag {
+    font-size: 0.8125rem;
+    color: var(--color-theme-muted);
+    text-decoration: none;
+    padding: 0.1875rem 0.625rem;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--color-theme-muted) 8%, transparent);
+    transition:
+      color var(--transition-fast) ease,
+      background-color var(--transition-fast) ease;
+  }
+
+  .post-tag:hover {
+    color: var(--color-theme-accent);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 10%, transparent);
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* 封面图 */
+  .post-cover {
+    margin-bottom: 2rem;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+
+  .post-cover img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* 文章正文 */
+  .post-content {
+    margin-bottom: 3rem;
+  }
+
+  /* 文章底部导航 */
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-theme-border);
+    margin-bottom: 2rem;
+  }
+
+  .post-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+    text-decoration: none;
+    transition:
+      transform var(--transition-fast) var(--transition-easing),
+      box-shadow var(--transition-fast) var(--transition-easing),
+      border-color var(--transition-fast) var(--transition-easing);
+  }
+
+  .post-nav-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-theme-accent);
+  }
+
+  .post-nav-next {
+    text-align: right;
+  }
+
+  .post-nav-label {
+    font-size: 0.8125rem;
+    color: var(--color-theme-muted);
+  }
+
+  .post-nav-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-theme-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 评论区 */
+  .post-comments {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-theme-border);
+  }
+
+  @media (max-width: 640px) {
+    .post-title {
+      font-size: 1.625rem;
+    }
+
+    .post-description {
+      font-size: 1rem;
+    }
+
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

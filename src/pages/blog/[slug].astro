@@ -1,0 +1,51 @@
+---
+/**
+ * [slug].astro
+ * 文章详情页路由
+ *
+ * 路由：/blog/:slug
+ * 使用 BlogPostLayout 渲染单篇文章。
+ * 自动获取上/下一篇用于导航。
+ */
+
+import BlogPostLayout from "@/layouts/BlogPostLayout.astro";
+import { getPublishedPosts } from "@/lib/posts";
+import { render } from "astro:content";
+
+/** 生成静态路径 */
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+
+  return posts.map((post, index) => ({
+    params: { slug: post.slug },
+    props: {
+      post,
+      prevPost: index < posts.length - 1
+        ? { slug: posts[index + 1].slug, title: posts[index + 1].data.title }
+        : null,
+      nextPost: index > 0
+        ? { slug: posts[index - 1].slug, title: posts[index - 1].data.title }
+        : null,
+    },
+  }));
+}
+
+const { post, prevPost, nextPost } = Astro.props;
+
+/** 渲染 Markdown 正文 */
+const { Content } = await render(post);
+---
+
+<BlogPostLayout
+  title={post.data.title}
+  pubDate={post.data.pubDate}
+  description={post.data.description}
+  category={post.data.category}
+  tags={post.data.tags}
+  cover={post.data.cover}
+  updatedDate={post.data.updatedDate}
+  prevPost={prevPost}
+  nextPost={nextPost}
+>
+  <Content />
+</BlogPostLayout>
