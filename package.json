@@ -15,7 +15,8 @@
     "validate-music": "tsx scripts/validate-music.mjs",
     "optimize-assets": "tsx scripts/optimize-assets.mjs",
     "extract-theme": "tsx scripts/color-extract.ts",
-    "new-post": "node scripts/new-post.mjs"
+    "new-post": "node scripts/new-post.mjs",
+    "update-config": "node scripts/update-config.mjs"
   },
   "dependencies": {
     "astro": "^4.16.0",
