@@ -278,3 +278,43 @@ button:active,
   background-color: color-mix(in srgb, var(--color-theme-accent) 8%, transparent);
   font-weight: 600;
 }
+
+/* ============================================================
+   View Transitions 全局样式
+   ============================================================ */
+
+/* 页面切换时的根过渡 */
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* 主题切换平滑过渡（整个页面） */
+html {
+  view-transition-name: root;
+}
+
+/* 暗色模式过渡增强：禁止背景闪烁 */
+::view-transition-group(root) {
+  animation-duration: 0.35s;
+  animation-timing-function: var(--transition-easing);
+}
+
+/* 减少动画偏好：禁用所有 View Transition 动画 */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+    transition: none !important;
+  }
+}

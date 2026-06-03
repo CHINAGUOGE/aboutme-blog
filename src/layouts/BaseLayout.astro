@@ -11,6 +11,7 @@
  */
 
 import { siteConfig } from "@/config/site";
+import { ClientRouter } from "astro:transitions/client";
 import ThemeToggle from "@/components/ThemeToggle.svelte";
 import SearchBar from "@/components/search/SearchBar.svelte";
 import MusicPlayer from "@/components/music/MusicPlayer.svelte";
@@ -86,29 +87,41 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
 
     <!--
       主题初始化脚本（同步，阻塞渲染）
-      在页面加载前读取 localStorage，设置 data-theme，防止闪烁
+      在页面加载前读取 localStorage，设置 data-theme，防止闪烁。
+      同时处理 View Transitions 后的主题恢复。
     -->
     <script is:inline>
       (function () {
-        try {
-          var stored = localStorage.getItem("theme");
-          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          var theme = stored || (prefersDark ? "dark" : "light");
-          document.documentElement.setAttribute("data-theme", theme);
-        } catch (e) {
-          // localStorage 不可用时静默失败
+        function applyTheme() {
+          try {
+            var stored = localStorage.getItem("theme");
+            var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            var theme = stored || (prefersDark ? "dark" : "light");
+            document.documentElement.setAttribute("data-theme", theme);
+          } catch (e) {
+            // localStorage 不可用时静默失败
+          }
         }
+
+        // 初始加载
+        applyTheme();
+
+        // View Transitions 页面切换后恢复主题
+        document.addEventListener("astro:after-swap", applyTheme);
       })();
     </script>
 
     <slot name="head" />
+
+    <!-- View Transitions（页面间平滑过渡） -->
+    <ClientRouter />
   </head>
 
   <body>
     <!-- ============================================================
          页头
          ============================================================ -->
-    <header class="site-header">
+    <header class="site-header" transition:persist="header">
       <nav class="site-nav">
         <a href="/" class="site-logo" aria-label="返回首页">
           <span class="site-logo-icon">🐦</span>
@@ -138,7 +151,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
     <!-- ============================================================
          主内容区
          ============================================================ -->
-    <main class:list={["site-main", { "max-w-prose": isPost }]}>
+    <main class:list={["site-main", { "max-w-prose": isPost }]} transition:animate="fade">
       <slot />
     </main>
 
@@ -169,19 +182,23 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
       </div>
     </footer>
 
-    <!-- 音乐播放器（SSR 安全，仅客户端加载） -->
+    <!-- 音乐播放器（SSR 安全，仅客户端加载，跨页面持久化） -->
     {siteConfig.music.enabled && (
-      <MusicPlayer
-        client:visible
-        volume={siteConfig.music.defaultVolume}
-        autoplay={siteConfig.music.autoplay}
-        showLrc={siteConfig.music.showLrc}
-        music={[]}
-      />
+      <div transition:persist="music-player">
+        <MusicPlayer
+          client:visible
+          volume={siteConfig.music.defaultVolume}
+          autoplay={siteConfig.music.autoplay}
+          showLrc={siteConfig.music.showLrc}
+          music={[]}
+        />
+      </div>
     )}
 
-    <!-- 键盘快捷键提示（按 ? 键显示） -->
-    <KeyboardHints client:load />
+    <!-- 键盘快捷键提示（按 ? 键显示，跨页面持久化） -->
+    <div transition:persist="keyboard-hints">
+      <KeyboardHints client:load />
+    </div>
   </body>
 </html>
 
@@ -331,6 +348,47 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
 
   .footer-powered {
     font-size: 0.75rem;
+  }
+
+  /* ---- View Transitions ---- */
+
+  /* 主内容区淡入淡出 */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fade-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-8px); }
+  }
+
+  /* 淡入动画（新页面） */
+  ::view-transition-new(site-main) {
+    animation: fade-in 0.3s var(--transition-easing) both;
+  }
+
+  /* 淡出动画（旧页面） */
+  ::view-transition-old(site-main) {
+    animation: fade-out 0.2s var(--transition-easing) both;
+  }
+
+  /* 页头保持不动 */
+  ::view-transition-new(header),
+  ::view-transition-old(header) {
+    animation: none;
+  }
+
+  /* 主题切换过渡 */
+  ::view-transition-new(root),
+  ::view-transition-old(root) {
+    mix-blend-mode: normal;
+  }
+
+  /* 禁用 View Transitions 的元素（避免不自然的形变） */
+  ::view-transition-old(aside),
+  ::view-transition-new(aside) {
+    animation: none;
   }
 
   /* ---- 响应式 ---- */

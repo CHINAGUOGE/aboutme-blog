@@ -34,19 +34,21 @@
     system: "跟随系统",
   };
 
+  /** 解析主题模式为实际的 light/dark */
+  function resolveTheme(mode: ThemeMode): "light" | "dark" {
+    if (mode === "system") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return mode;
+  }
+
   /** 应用主题到 DOM */
   function applyTheme(mode: ThemeMode): void {
-    const resolved =
-      mode === "system"
-        ? window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light"
-        : mode;
-
+    const resolved = resolveTheme(mode);
     document.documentElement.setAttribute("data-theme", resolved);
   }
 
-  /** 切换到下一个主题 */
+  /** 使用 View Transition 切换主题（平滑动画） */
   function toggle(): void {
     const order: ThemeMode[] = ["light", "dark", "system"];
     const currentIndex = order.indexOf(theme);
@@ -58,7 +60,14 @@
       // localStorage 不可用时静默失败
     }
 
-    applyTheme(theme);
+    // 使用 View Transition API 实现平滑主题切换
+    if (document.startViewTransition) {
+      document.startViewTransition(() => {
+        applyTheme(theme);
+      });
+    } else {
+      applyTheme(theme);
+    }
   }
 
   /** 键盘事件处理 */
