@@ -4,14 +4,22 @@
 
   特性：
     - SSR 安全（客户端动态加载）
-    - 主题跟随（亮/暗模式自动切换 Giscus 主题）
-    - 防闪烁（FOUC prevention）：iframe 加载前不显示
-    - 动态主题桥接（postMessage 更新 Giscus 主题）
+    - 主题跟随（通过 giscus-theme.ts 桥接）
+    - 防闪烁（iframe 加载前不显示）
+    - 动态主题切换（postMessage 无刷新更新）
     - 可配置所有 Giscus 参数
 -->
 
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import {
+    getBlogTheme,
+    mapTheme,
+    updateGiscusTheme,
+    createThemeObserver,
+    buildGiscusUrl,
+    type GiscusTheme,
+  } from "@/lib/giscus-theme";
 
   /** Giscus 配置 */
   export let repo: string = "";
@@ -29,39 +37,7 @@
   let container: HTMLDivElement;
   let mounted = false;
   let iframeLoaded = false;
-  let currentTheme: "light" | "dark" = "light";
-
-  /** Giscus 主题 URL 映射 */
-  const GISCUS_THEMES = {
-    light: "light",
-    dark: "dark_dimmed",
-  };
-
-  /** 获取当前页面主题 */
-  function getTheme(): "light" | "dark" {
-    if (typeof document === "undefined") return "light";
-    return (document.documentElement.getAttribute("data-theme") as "light" | "dark") || "light";
-  }
-
-  /** 生成 Giscus script src */
-  function getGiscusSrc(): string {
-    const params = new URLSearchParams({
-      repo,
-      "repo-id": repoId,
-      category,
-      "category-id": categoryId,
-      "mapping": mapping,
-      "strict": strict ? "1" : "0",
-      "reactions-enabled": reactionsEnabled ? "1" : "0",
-      "emit-metadata": emitMetadata ? "1" : "0",
-      "input-position": inputPosition,
-      "theme": GISCUS_THEMES[currentTheme],
-      "lang": lang,
-      loading: "lazy",
-    });
-
-    return `https://giscus.app/client?${params.toString()}`;
-  }
+  let destroyThemeObserver: (() => void) | null = null;
 
   /** 加载 Giscus */
   function loadGiscus(): void {
@@ -70,26 +46,38 @@
     // 清空容器
     container.innerHTML = "";
 
+    // 使用工具函数生成 URL
+    const src = buildGiscusUrl({
+      repo,
+      repoId,
+      category,
+      categoryId,
+      mapping,
+      strict,
+      reactionsEnabled,
+      emitMetadata,
+      inputPosition,
+      lang,
+    });
+
     // 创建 script 元素
     const script = document.createElement("script");
-    script.src = getGiscusSrc();
+    script.src = src;
     script.async = true;
     script.crossOrigin = "anonymous";
 
-    // 监听 iframe 加载完成
+    // 监听 iframe 加载
     script.onload = () => {
-      // 等待 iframe 渲染
       const checkIframe = setInterval(() => {
         const iframe = container.querySelector("iframe");
         if (iframe) {
           clearInterval(checkIframe);
 
-          // 监听 iframe 内部的主题消息
           iframe.addEventListener("load", () => {
             iframeLoaded = true;
           });
 
-          // 超时保护：2 秒后无论如何显示
+          // 超时保护：2 秒后显示
           setTimeout(() => {
             iframeLoaded = true;
           }, 2000);
@@ -98,61 +86,32 @@
     };
 
     container.appendChild(script);
-  }
 
-  /** 更新 Giscus 主题（postMessage） */
-  function updateGiscusTheme(theme: "light" | "dark"): void {
-    if (!container) return;
-
-    const iframe = container.querySelector("iframe");
-    if (!iframe || !iframe.contentWindow) return;
-
-    const message = {
-      giscus: {
-        setConfig: {
-          theme: GISCUS_THEMES[theme],
-        },
-      },
-    };
-
-    iframe.contentWindow.postMessage(message, "https://giscus.app");
-  }
-
-  /** 监听主题变化 */
-  function watchTheme(): () => void {
-    const observer = new MutationObserver(() => {
-      const newTheme = getTheme();
-      if (newTheme !== currentTheme) {
-        currentTheme = newTheme;
-        updateGiscusTheme(newTheme);
-      }
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => observer.disconnect();
+    // 创建主题观察器（使用工具函数）
+    destroyThemeObserver = createThemeObserver(() => container);
   }
 
   onMount(() => {
     mounted = true;
-    currentTheme = getTheme();
 
-    // 加载 Giscus
-    loadGiscus();
+    if (repo && repoId) {
+      loadGiscus();
+    }
 
-    // 监听主题变化
-    const unwatchTheme = watchTheme();
-
-    onDestroy(() => {
-      unwatchTheme();
-    });
+    return () => {
+      if (destroyThemeObserver) {
+        destroyThemeObserver();
+        destroyThemeObserver = null;
+      }
+    };
   });
 
   onDestroy(() => {
     mounted = false;
+    if (destroyThemeObserver) {
+      destroyThemeObserver();
+      destroyThemeObserver = null;
+    }
   });
 </script>
 
@@ -160,7 +119,6 @@
   <div class="giscus-wrapper" class:mounted class:loaded={iframeLoaded}>
     <div bind:this={container} class="giscus-container"></div>
 
-    <!-- 加载占位符 -->
     {#if !iframeLoaded}
       <div class="giscus-placeholder">
         <div class="placeholder-spinner"></div>
@@ -197,12 +155,10 @@
     min-height: 200px;
   }
 
-  /* Giscus iframe 样式覆盖 */
   :global(.giscus-container iframe) {
     border-radius: var(--radius-card);
   }
 
-  /* 加载占位符 */
   .giscus-placeholder {
     display: flex;
     flex-direction: column;
@@ -227,7 +183,6 @@
     to { transform: rotate(360deg); }
   }
 
-  /* 未配置提示 */
   .giscus-missing {
     margin-top: 2rem;
     padding: 1.25rem;
