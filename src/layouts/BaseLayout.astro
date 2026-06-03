@@ -12,6 +12,7 @@
 
 import { siteConfig } from "@/config/site";
 import ThemeToggle from "@/components/ThemeToggle.svelte";
+import SearchBar from "@/components/search/SearchBar.svelte";
 import "@/styles/global.css";
 
 /** 页面级 props */
@@ -118,6 +119,7 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
         </ul>
 
         <div class="nav-actions">
+          <SearchBar client:load />
           <ThemeToggle client:load />
         </div>
       </nav>
