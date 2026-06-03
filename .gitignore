@@ -1,27 +1,71 @@
+# ===========================
 # Dependencies
+# ===========================
 node_modules/
 
+# ===========================
 # Build output
+# ===========================
 dist/
 .astro/
 
-# OS files
-.DS_Store
-Thumbs.db
+# ===========================
+# Generated files (build-time)
+# ===========================
+src/styles/theme.css
 
-# IDE
-.vscode/
-.idea/
-
-# Environment
+# ===========================
+# Environment & secrets
+# ===========================
 .env
 .env.local
 .env.*.local
+.wrangler/
 
-# Generated theme (by color-extract.ts)
-src/styles/theme.css
+# ===========================
+# OS files
+# ===========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
 
-# Logs
+# ===========================
+# IDE / Editor
+# ===========================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ===========================
+# Logs & debug
+# ===========================
 *.log
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===========================
+# Test & coverage
+# ===========================
+coverage/
+.nyc_output/
+
+# ===========================
+# Temp files
+# ===========================
+tmp/
+temp/
+*.tmp
+*.temp
+
+# ===========================
+# Cache
+# ===========================
+.cache/
+.parcel-cache/
+.turbo/

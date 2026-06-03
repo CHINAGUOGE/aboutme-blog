@@ -1,0 +1,57 @@
+# ============================================================
+# PR Check — Pull Request 验证
+#
+# 在 PR 时自动评论构建结果
+# ============================================================
+
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  check:
+    name: 🔍 PR Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "9"
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Validate config
+        run: pnpm validate-config
+
+      - name: 🔨 Build
+        run: |
+          pnpm tsx scripts/color-extract.ts || true
+          pnpm astro build
+
+      - name: 📊 Build report
+        if: always()
+        run: |
+          echo "## 📊 Build Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -d "dist" ]; then
+            PAGES=$(find dist -name "*.html" | wc -l)
+            SIZE=$(du -sh dist | cut -f1)
+            echo "✅ **Status:** Success" >> $GITHUB_STEP_SUMMARY
+            echo "📄 **Pages:** $PAGES" >> $GITHUB_STEP_SUMMARY
+            echo "📦 **Size:** $SIZE" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status:** Failed" >> $GITHUB_STEP_SUMMARY
+          fi
