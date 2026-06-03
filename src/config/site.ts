@@ -217,9 +217,9 @@ export const siteConfig = siteConfigSchema.parse({
   },
 
   socials: [
-    { platform: "github", url: "https://github.com/guogepige", order: 0 },
-    { platform: "bilibili", url: "https://space.bilibili.com/guogepige", order: 1 },
-    { platform: "email", url: "mailto:hi@guogepige.dev", order: 2 },
+    { platform: "github", url: "https://github.com/CHINAGUOGE", order: 0 },
+    { platform: "bilibili", url: "https://space.bilibili.com/384971536", order: 1 },
+    { platform: "email", url: "mailto:1518186080@qq.com", order: 2 },
     { platform: "rss", url: "/rss.xml", order: 3 },
   ],
 
@@ -258,21 +258,7 @@ export const siteConfig = siteConfigSchema.parse({
     lang: "zh-CN",
   },
 
-  friends: [
-    {
-      name: "W.S.S-Wiki",
-      avatar: "/wiki.png",
-      url: "https://wiki.51320721.xyz",
-      description: "我运营的Wiki",
-      group: "我的项目",
-    },
-  ],
+  friends: [],
 
-  timeline: [
-    {
-      date: "2026",
-      title: "开始写博客",
-      description: "使用 Astro 搭建了这个可爱的博客 ✨",
-    },
-  ],
+  timeline: [],
 });

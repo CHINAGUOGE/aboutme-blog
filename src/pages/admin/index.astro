@@ -1,0 +1,578 @@
+---
+/**
+ * admin/index.astro
+ * 站点配置管理页面
+ *
+ * 纯客户端实现，无需服务端。
+ * 打开页面后粘贴当前 site.ts 内容，编辑后一键生成新配置。
+ */
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="站点配置" description="管理博客配置">
+  <div class="admin-page">
+    <header class="admin-header">
+      <h1 class="admin-title">⚙️ 站点配置</h1>
+      <p class="admin-desc">
+        在线编辑博客配置，修改后点击「生成配置」复制到 <code>src/config/site.ts</code>
+      </p>
+    </header>
+
+    <!-- 操作栏 -->
+    <div class="admin-toolbar">
+      <button class="btn btn-primary" id="btn-generate">📋 生成配置</button>
+      <button class="btn btn-secondary" id="btn-reset">↩️ 重置</button>
+      <button class="btn btn-secondary" id="btn-export">💾 导出 JSON</button>
+      <label class="btn btn-secondary" id="btn-import">
+        📂 导入 JSON
+        <input type="file" accept=".json" id="import-file" hidden />
+      </label>
+    </div>
+
+    <!-- 配置表单 -->
+    <form id="config-form" class="config-form">
+
+      <!-- 站点信息 -->
+      <section class="config-section">
+        <h2 class="section-title">🌐 站点信息</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="site-title">站点标题</label>
+            <input type="text" id="site-title" name="title" placeholder="果鸽的博客" />
+          </div>
+          <div class="form-group">
+            <label for="site-subtitle">站点副标题</label>
+            <input type="text" id="site-subtitle" name="subtitle" placeholder="别当欧尼酱了！" />
+          </div>
+          <div class="form-group full-width">
+            <label for="site-description">站点描述</label>
+            <textarea id="site-description" name="description" rows="2" placeholder="果鸽的个人博客"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="site-url">站点 URL</label>
+            <input type="url" id="site-url" name="site" placeholder="https://blog.guogepige.dev" />
+          </div>
+          <div class="form-group">
+            <label for="site-lang">语言</label>
+            <input type="text" id="site-lang" name="lang" placeholder="zh-CN" />
+          </div>
+        </div>
+      </section>
+
+      <!-- 作者信息 -->
+      <section class="config-section">
+        <h2 class="section-title">👤 作者信息</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="author-name">昵称</label>
+            <input type="text" id="author-name" name="author.name" placeholder="果鸽" />
+          </div>
+          <div class="form-group">
+            <label for="author-location">所在地</label>
+            <input type="text" id="author-location" name="author.location" placeholder="某颗星球" />
+          </div>
+          <div class="form-group full-width">
+            <label for="author-bio">个人简介</label>
+            <textarea id="author-bio" name="author.bio" rows="2" placeholder="一只鸽子 🐦"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="author-avatar">头像路径</label>
+            <input type="text" id="author-avatar" name="author.avatar" placeholder="/avatar.webp" />
+          </div>
+        </div>
+      </section>
+
+      <!-- 社交链接 -->
+      <section class="config-section">
+        <h2 class="section-title">🔗 社交链接</h2>
+        <div id="socials-container" class="dynamic-list"></div>
+        <button type="button" class="btn btn-small" id="btn-add-social">+ 添加社交链接</button>
+      </section>
+
+      <!-- 导航栏 -->
+      <section class="config-section">
+        <h2 class="section-title">🧭 导航栏</h2>
+        <div id="nav-container" class="dynamic-list"></div>
+        <button type="button" class="btn btn-small" id="btn-add-nav">+ 添加导航项</button>
+      </section>
+
+      <!-- 主题设置 -->
+      <section class="config-section">
+        <h2 class="section-title">🎨 主题设置</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="theme-mode">默认主题</label>
+            <select id="theme-mode" name="theme.defaultMode">
+              <option value="light">亮色</option>
+              <option value="dark">暗色</option>
+              <option value="system">跟随系统</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="theme-wallpaper">壁纸路径</label>
+            <input type="text" id="theme-wallpaper" name="theme.wallpaperPath" placeholder="wallpaper.jpg" />
+          </div>
+          <div class="form-group">
+            <label for="theme-extract">
+              <input type="checkbox" id="theme-extract" name="theme.useExtractedColors" />
+              使用壁纸提取色
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 音乐播放器 -->
+      <section class="config-section">
+        <h2 class="section-title">🎵 音乐播放器</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="music-enabled">
+              <input type="checkbox" id="music-enabled" name="music.enabled" />
+              启用音乐播放器
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="music-volume">默认音量 (0-1)</label>
+            <input type="number" id="music-volume" name="music.defaultVolume" min="0" max="1" step="0.1" placeholder="0.7" />
+          </div>
+          <div class="form-group">
+            <label for="music-lrc">
+              <input type="checkbox" id="music-lrc" name="music.showLrc" />
+              显示歌词
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="music-autoplay">
+              <input type="checkbox" id="music-autoplay" name="music.autoplay" />
+              自动播放
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 评论系统 -->
+      <section class="config-section">
+        <h2 class="section-title">💬 评论系统 (Giscus)</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="comment-enabled">
+              <input type="checkbox" id="comment-enabled" name="comment.enabled" />
+              启用评论
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="comment-repo">仓库 (owner/repo)</label>
+            <input type="text" id="comment-repo" name="comment.repo" placeholder="guogepige/blog-comments" />
+          </div>
+          <div class="form-group">
+            <label for="comment-repoId">Repository ID</label>
+            <input type="text" id="comment-repoId" name="comment.repoId" placeholder="R_kgDOxxx" />
+          </div>
+          <div class="form-group">
+            <label for="comment-category">分类</label>
+            <input type="text" id="comment-category" name="comment.category" placeholder="Announcements" />
+          </div>
+          <div class="form-group">
+            <label for="comment-categoryId">分类 ID</label>
+            <input type="text" id="comment-categoryId" name="comment.categoryId" placeholder="DIC_xxx" />
+          </div>
+          <div class="form-group">
+            <label for="comment-mapping">映射方式</label>
+            <select id="comment-mapping" name="comment.mapping">
+              <option value="pathname">pathname</option>
+              <option value="url">url</option>
+              <option value="title">title</option>
+              <option value="og:title">og:title</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="comment-lang">语言</label>
+            <input type="text" id="comment-lang" name="comment.lang" placeholder="zh-CN" />
+          </div>
+          <div class="form-group">
+            <label for="comment-inputPosition">输入框位置</label>
+            <select id="comment-inputPosition" name="comment.inputPosition">
+              <option value="top">顶部</option>
+              <option value="bottom">底部</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 友链 -->
+      <section class="config-section">
+        <h2 class="section-title">🤝 友链</h2>
+        <p class="section-hint">友链数据在 <code>src/data/friends.ts</code> 中管理</p>
+      </section>
+
+      <!-- 时间轴 -->
+      <section class="config-section">
+        <h2 class="section-title">📅 时间轴</h2>
+        <div id="timeline-container" class="dynamic-list"></div>
+        <button type="button" class="btn btn-small" id="btn-add-timeline">+ 添加事件</button>
+      </section>
+
+      <!-- 备案信息 -->
+      <section class="config-section">
+        <h2 class="section-title">📋 备案信息</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="icp">ICP 备案号</label>
+            <input type="text" id="icp" name="icp" placeholder="京ICP备xxxxxxx号" />
+          </div>
+          <div class="form-group">
+            <label for="police">公安备案号</label>
+            <input type="text" id="police" name="police" placeholder="京公网安备xxxxxxx号" />
+          </div>
+        </div>
+      </section>
+    </form>
+
+    <!-- 生成结果弹窗 -->
+    <dialog id="output-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>📋 生成的配置</h2>
+          <button class="modal-close" id="modal-close">✕</button>
+        </div>
+        <p class="modal-hint">复制以下内容替换 <code>src/config/site.ts</code> 中的 <code>siteConfig = siteConfigSchema.parse(&#123;...&#125;)</code> 部分</p>
+        <textarea id="output-code" class="output-code" readonly rows="20"></textarea>
+        <div class="modal-actions">
+          <button class="btn btn-primary" id="btn-copy">📋 复制到剪贴板</button>
+          <button class="btn btn-secondary" id="btn-download">💾 下载文件</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+</BaseLayout>
+
+<style>
+  .admin-page {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .admin-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .admin-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+
+  .admin-desc {
+    color: var(--color-theme-muted);
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+
+  .admin-desc code {
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--color-theme-accent) 10%, transparent);
+    color: var(--color-theme-accent);
+    font-size: 0.875em;
+  }
+
+  /* 操作栏 */
+  .admin-toolbar {
+    display: flex;
+    gap: 0.625rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 4rem;
+    z-index: 40;
+    padding: 0.75rem 0;
+    background-color: var(--color-theme-bg);
+  }
+
+  /* 按钮 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 1.125rem;
+    border: 1px solid var(--color-theme-border);
+    border-radius: var(--radius-base);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .btn-primary {
+    background-color: var(--color-theme-accent);
+    color: white;
+    border-color: var(--color-theme-accent);
+  }
+
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--color-theme-accent) 85%, black);
+  }
+
+  .btn-secondary {
+    background-color: var(--color-theme-card);
+    color: var(--color-theme-text);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--color-theme-accent);
+  }
+
+  .btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    background-color: transparent;
+    color: var(--color-theme-accent);
+    border: 1px dashed var(--color-theme-accent);
+  }
+
+  .btn-danger {
+    color: #e74c3c;
+    border-color: #e74c3c;
+    background: transparent;
+  }
+
+  /* 配置区块 */
+  .config-section {
+    padding: 1.5rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+    margin-bottom: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid var(--color-theme-border);
+  }
+
+  .section-hint {
+    font-size: 0.875rem;
+    color: var(--color-theme-muted);
+    margin: 0;
+  }
+
+  .section-hint code {
+    color: var(--color-theme-accent);
+  }
+
+  /* 表单网格 */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-group label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-theme-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="url"],
+  .form-group input[type="number"],
+  .form-group textarea,
+  .form-group select {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--color-theme-border);
+    border-radius: var(--radius-input);
+    background-color: var(--color-theme-bg);
+    color: var(--color-theme-text);
+    font-size: 0.9375rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: var(--color-theme-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-theme-accent) 15%, transparent);
+  }
+
+  .form-group input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--color-theme-accent);
+  }
+
+  /* 动态列表 */
+  .dynamic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .dynamic-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.75rem;
+    border: 1px solid var(--color-theme-border);
+    border-radius: var(--radius-base);
+    background-color: var(--color-theme-bg);
+  }
+
+  .dynamic-item .form-group {
+    flex: 1;
+  }
+
+  .dynamic-item .btn-remove {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--radius-base);
+    background: transparent;
+    color: var(--color-theme-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .dynamic-item .btn-remove:hover {
+    color: #e74c3c;
+    background: color-mix(in srgb, #e74c3c 10%, transparent);
+  }
+
+  /* 弹窗 */
+  .modal {
+    border: none;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    color: var(--color-theme-text);
+    padding: 0;
+    max-width: 700px;
+    width: 95%;
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .modal-close {
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: var(--radius-base);
+    background: transparent;
+    color: var(--color-theme-muted);
+    cursor: pointer;
+    font-size: 1.125rem;
+  }
+
+  .modal-close:hover {
+    color: var(--color-theme-accent);
+  }
+
+  .modal-hint {
+    font-size: 0.875rem;
+    color: var(--color-theme-muted);
+    margin: 0 0 1rem;
+  }
+
+  .modal-hint code {
+    color: var(--color-theme-accent);
+  }
+
+  .output-code {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid var(--color-theme-border);
+    border-radius: var(--radius-base);
+    background-color: var(--color-theme-bg);
+    color: var(--color-theme-text);
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.625rem;
+    margin-top: 1rem;
+  }
+
+  /* 响应式 */
+  @media (max-width: 640px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-toolbar {
+      position: static;
+    }
+
+    .dynamic-item {
+      flex-direction: column;
+    }
+
+    .dynamic-item .btn-remove {
+      margin-top: 0;
+      align-self: flex-end;
+    }
+  }
+</style>
+
+<script>
+import "@/scripts/admin-config";
+</script>

@@ -21,41 +21,6 @@ export interface FriendGroups {
   [group: string]: FriendItem[];
 }
 
-const friendsData: FriendGroups = {
-  小伙伴: [
-    {
-      name: "示例友链 A",
-      avatar: "https://api.dicebear.com/7.x/fun-emoji/svg?seed=alice",
-      url: "https://example.com",
-      description: "热爱前端开发的小伙伴 ✨",
-    },
-    {
-      name: "示例友链 B",
-      avatar: "https://api.dicebear.com/7.x/fun-emoji/svg?seed=bob",
-      url: "https://example.org",
-      description: "全栈开发者，喜欢折腾新技术",
-    },
-    {
-      name: "示例友链 C",
-      avatar: "https://api.dicebear.com/7.x/fun-emoji/svg?seed=charlie",
-      url: "https://example.net",
-      description: "设计 & 前端，二次元爱好者",
-    },
-  ],
-  友情链接: [
-    {
-      name: "Astro 官方",
-      avatar: "https://api.dicebear.com/7.x/shapes/svg?seed=astro",
-      url: "https://astro.build",
-      description: "构建快速、内容驱动的网站",
-    },
-    {
-      name: "Svelte 官方",
-      avatar: "https://api.dicebear.com/7.x/shapes/svg?seed=svelte",
-      url: "https://svelte.dev",
-      description: "Cybernetically enhanced web apps",
-    },
-  ],
-};
+const friendsData: FriendGroups = {};
 
 export default friendsData;
