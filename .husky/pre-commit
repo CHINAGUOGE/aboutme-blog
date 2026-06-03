@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Pre-commit hook — 由 Husky v9 管理
+# 在每次 git commit 前自动执行 lint-staged 校验
+
+npx lint-staged

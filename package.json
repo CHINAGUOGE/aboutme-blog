@@ -10,7 +10,10 @@
     "build:astro": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "postinstall": "husky || true"
+    "prepare": "husky",
+    "validate-config": "tsx scripts/validate-config.mjs",
+    "validate-music": "tsx scripts/validate-music.mjs",
+    "new-post": "node scripts/new-post.mjs"
   },
   "dependencies": {
     "astro": "^4.16.0",
@@ -29,8 +32,11 @@
     "zod": "^3.23.0"
   },
   "lint-staged": {
-    "*.{ts,mjs,astro}": [
+    "src/config/**/*.ts": [
       "pnpm validate-config"
+    ],
+    "src/assets/**/*.{mp3,flac,wav,ogg}": [
+      "pnpm validate-music"
     ]
   }
 }
