@@ -1,0 +1,68 @@
+---
+/**
+ * 分类筛选页
+ *
+ * 路由：
+ *   /blog/category/随笔      → 该分类第 1 页
+ *   /blog/category/随笔/2    → 该分类第 2 页
+ */
+
+import BlogListLayout from "@/components/blog/BlogListLayout.astro";
+import {
+  getPostsByCategory,
+  getCategories,
+  getTags,
+} from "@/lib/posts";
+
+/** 每页文章数 */
+const PAGE_SIZE = 10;
+
+/** 当前分类 */
+const { category } = Astro.params;
+
+/** 获取当前分类的文章 */
+const categoryPosts = await getPostsByCategory(decodeURIComponent(category || ""));
+
+/** 获取侧边栏数据 */
+const categories = await getCategories();
+const tags = await getTags();
+
+/** 分页 */
+export async function getStaticPaths({ paginate }: { paginate: Function }) {
+  const { getCategories, getPostsByCategory } = await import("@/lib/posts");
+  const categories = await getCategories();
+
+  const paths = [];
+
+  for (const [categoryName] of categories) {
+    const posts = await getPostsByCategory(categoryName);
+    const paginated = paginate(posts, {
+      pageSize: 10,
+      params: { category: encodeURIComponent(categoryName) },
+    });
+    paths.push(...paginated);
+  }
+
+  return paths;
+}
+
+const { page } = Astro.props;
+
+/** 解码分类名用于显示 */
+const decodedCategory = decodeURIComponent(category || "");
+---
+
+<BlogListLayout
+  title={`📂 ${decodedCategory}`}
+  description={`果鸽的博客 — 分类：${decodedCategory}`}
+  posts={page.data}
+  currentPage={page.currentPage}
+  totalPages={page.totalPages}
+  totalPosts={page.total}
+  hasPrev={page.url.prev !== undefined}
+  hasNext={page.url.next !== undefined}
+  basePath={`/blog/category/${category}`}
+  categories={categories}
+  tags={tags}
+  activeCategory={decodedCategory}
+/>

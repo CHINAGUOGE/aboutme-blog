@@ -9,20 +9,13 @@
  *   /blog/3    → 第 3 页
  *
  * 通过 Astro 的 paginate() 自动生成静态页面。
+ * 使用 BlogListLayout 组件保持与分类/标签页一致的布局。
  */
 
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import PostCard from "@/components/blog/PostCard.astro";
-import Pagination from "@/components/blog/Pagination.astro";
+import BlogListLayout from "@/components/blog/BlogListLayout.astro";
 import { getPublishedPosts, getCategories, getTags } from "@/lib/posts";
 
-/** 每页文章数 */
-const PAGE_SIZE = 10;
-
-/** 获取所有已发布文章 */
-const allPosts = await getPublishedPosts();
-
-/** 获取分类和标签列表 */
+/** 获取侧边栏数据 */
 const categories = await getCategories();
 const tags = await getTags();
 
@@ -36,270 +29,18 @@ export async function getStaticPaths({ paginate }: { paginate: Function }) {
 
 /** 当前页数据 */
 const { page } = Astro.props;
-
-/** 页面标题 */
-const pageTitle = page.currentPage > 1
-  ? `文章 — 第 ${page.currentPage} 页`
-  : "文章";
 ---
 
-<BaseLayout title={pageTitle} description="果鸽的博客 — 所有文章">
-  <div class="blog-page">
-    <!-- 页面头部 -->
-    <header class="blog-header">
-      <h1 class="blog-title">📝 文章</h1>
-      <p class="blog-subtitle">
-        共 {page.total} 篇文章
-        {page.totalPages > 1 && (
-          <span>· 第 {page.currentPage}/{page.totalPages} 页</span>
-        )}
-      </p>
-    </header>
-
-    <div class="blog-layout">
-      <!-- 文章列表 -->
-      <section class="blog-posts">
-        {page.data.length > 0 ? (
-          <div class="posts-grid">
-            {page.data.map((post, index) => (
-              <PostCard post={post} index={index} />
-            ))}
-          </div>
-        ) : (
-          <div class="posts-empty">
-            <p>🐦 还没有文章呢，敬请期待！</p>
-          </div>
-        )}
-
-        {/* 分页 */}
-        <Pagination
-          currentPage={page.currentPage}
-          totalPages={page.totalPages}
-          hasPrev={page.url.prev !== undefined}
-          hasNext={page.url.next !== undefined}
-          basePath="/blog"
-        />
-      </section>
-
-      <!-- 侧边栏 -->
-      <aside class="blog-sidebar">
-        {/* 分类列表 */}
-        {categories.size > 0 && (
-          <div class="sidebar-section">
-            <h3 class="sidebar-title">📂 分类</h3>
-            <ul class="sidebar-list">
-              {[...categories.entries()]
-                .sort((a, b) => b[1] - a[1])
-                .map(([name, count]) => (
-                  <li>
-                    <a href={`/blog?category=${encodeURIComponent(name)}`} class="sidebar-link">
-                      <span>{name}</span>
-                      <span class="sidebar-count">{count}</span>
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </div>
-        )}
-
-        {/* 标签云 */}
-        {tags.size > 0 && (
-          <div class="sidebar-section">
-            <h3 class="sidebar-title">🏷️ 标签</h3>
-            <div class="tag-cloud">
-              {[...tags.entries()]
-                .sort((a, b) => b[1] - a[1])
-                .map(([name, count]) => (
-                  <a
-                    href={`/blog?tag=${encodeURIComponent(name)}`}
-                    class="tag-item"
-                    style={`font-size: ${Math.max(0.75, Math.min(1.1, 0.75 + count * 0.08))}rem`}
-                  >
-                    #{name}
-                    <span class="tag-count">{count}</span>
-                  </a>
-                ))
-              }
-            </div>
-          </div>
-        )}
-      </aside>
-    </div>
-  </div>
-</BaseLayout>
-
-<style>
-  .blog-page {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  /* 页面头部 */
-  .blog-header {
-    margin-bottom: 2rem;
-  }
-
-  .blog-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem;
-    color: var(--color-theme-text);
-  }
-
-  .blog-subtitle {
-    font-size: 0.9375rem;
-    color: var(--color-theme-muted);
-    margin: 0;
-  }
-
-  /* 双栏布局 */
-  .blog-layout {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 2.5rem;
-    align-items: start;
-  }
-
-  /* 文章网格 */
-  .posts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.25rem;
-  }
-
-  /* 空状态 */
-  .posts-empty {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: var(--color-theme-muted);
-    font-size: 1.125rem;
-  }
-
-  /* 侧边栏 */
-  .blog-sidebar {
-    position: sticky;
-    top: 5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .sidebar-section {
-    padding: 1.25rem;
-    border-radius: var(--radius-card);
-    background-color: var(--color-theme-card);
-    border: 1px solid var(--color-theme-border);
-  }
-
-  .sidebar-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0 0 0.875rem;
-    color: var(--color-theme-text);
-  }
-
-  .sidebar-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .sidebar-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem 0.625rem;
-    border-radius: var(--radius-base);
-    text-decoration: none;
-    color: var(--color-theme-text);
-    font-size: 0.875rem;
-    transition:
-      color var(--transition-fast) ease,
-      background-color var(--transition-fast) ease;
-  }
-
-  .sidebar-link:hover {
-    color: var(--color-theme-accent);
-    background-color: color-mix(in srgb, var(--color-theme-accent) 8%, transparent);
-    transform: none;
-    box-shadow: none;
-  }
-
-  .sidebar-count {
-    font-size: 0.75rem;
-    color: var(--color-theme-muted);
-    background-color: color-mix(in srgb, var(--color-theme-muted) 10%, transparent);
-    padding: 0.0625rem 0.5rem;
-    border-radius: 9999px;
-  }
-
-  /* 标签云 */
-  .tag-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .tag-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    background-color: color-mix(in srgb, var(--color-theme-accent) 8%, transparent);
-    color: var(--color-theme-muted);
-    text-decoration: none;
-    transition:
-      color var(--transition-fast) ease,
-      background-color var(--transition-fast) ease;
-  }
-
-  .tag-item:hover {
-    color: var(--color-theme-accent);
-    background-color: color-mix(in srgb, var(--color-theme-accent) 15%, transparent);
-    transform: none;
-    box-shadow: none;
-  }
-
-  .tag-count {
-    font-size: 0.6875rem;
-    opacity: 0.7;
-  }
-
-  /* 响应式 */
-  @media (max-width: 900px) {
-    .blog-layout {
-      grid-template-columns: 1fr;
-    }
-
-    .blog-sidebar {
-      position: static;
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-
-    .sidebar-section {
-      flex: 1;
-      min-width: 240px;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .blog-title {
-      font-size: 1.5rem;
-    }
-
-    .posts-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .blog-sidebar {
-      flex-direction: column;
-    }
-
-    .sidebar-section {
-      min-width: unset;
-    }
-  }
-</style>
+<BlogListLayout
+  title="📝 文章"
+  description="果鸽的博客 — 所有文章"
+  posts={page.data}
+  currentPage={page.currentPage}
+  totalPages={page.totalPages}
+  totalPosts={page.total}
+  hasPrev={page.url.prev !== undefined}
+  hasNext={page.url.next !== undefined}
+  basePath="/blog"
+  categories={categories}
+  tags={tags}
+/>

@@ -1,0 +1,68 @@
+---
+/**
+ * 标签筛选页
+ *
+ * 路由：
+ *   /blog/tag/Astro      → 该标签第 1 页
+ *   /blog/tag/Astro/2    → 该标签第 2 页
+ */
+
+import BlogListLayout from "@/components/blog/BlogListLayout.astro";
+import {
+  getPostsByTag,
+  getCategories,
+  getTags,
+} from "@/lib/posts";
+
+/** 每页文章数 */
+const PAGE_SIZE = 10;
+
+/** 当前标签 */
+const { tag } = Astro.params;
+
+/** 获取当前标签的文章 */
+const tagPosts = await getPostsByTag(decodeURIComponent(tag || ""));
+
+/** 获取侧边栏数据 */
+const categories = await getCategories();
+const tags = await getTags();
+
+/** 分页 */
+export async function getStaticPaths({ paginate }: { paginate: Function }) {
+  const { getTags, getPostsByTag } = await import("@/lib/posts");
+  const tags = await getTags();
+
+  const paths = [];
+
+  for (const [tagName] of tags) {
+    const posts = await getPostsByTag(tagName);
+    const paginated = paginate(posts, {
+      pageSize: 10,
+      params: { tag: encodeURIComponent(tagName) },
+    });
+    paths.push(...paginated);
+  }
+
+  return paths;
+}
+
+const { page } = Astro.props;
+
+/** 解码标签名用于显示 */
+const decodedTag = decodeURIComponent(tag || "");
+---
+
+<BlogListLayout
+  title={`🏷️ #${decodedTag}`}
+  description={`果鸽的博客 — 标签：${decodedTag}`}
+  posts={page.data}
+  currentPage={page.currentPage}
+  totalPages={page.totalPages}
+  totalPosts={page.total}
+  hasPrev={page.url.prev !== undefined}
+  hasNext={page.url.next !== undefined}
+  basePath={`/blog/tag/${tag}`}
+  categories={categories}
+  tags={tags}
+  activeTag={decodedTag}
+/>

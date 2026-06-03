@@ -1,0 +1,369 @@
+---
+/**
+ * BlogListLayout.astro
+ * 博客列表通用布局
+ *
+ * 被文章列表页、分类页、标签页复用。
+ * 统一页面结构：标题 + 文章网格 + 分页 + 侧边栏
+ */
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/blog/PostCard.astro";
+import Pagination from "@/components/blog/Pagination.astro";
+import type { BlogPost } from "@/lib/posts";
+
+interface Props {
+  /** 页面标题 */
+  title: string;
+  /** 页面描述（SEO） */
+  description?: string;
+  /** 当前页文章列表 */
+  posts: BlogPost[];
+  /** 当前页码 */
+  currentPage: number;
+  /** 总页数 */
+  totalPages: number;
+  /** 总文章数 */
+  totalPosts: number;
+  /** 是否有上一页 */
+  hasPrev: boolean;
+  /** 是否有下一页 */
+  hasNext: boolean;
+  /** 分页基础路径 */
+  basePath: string;
+  /** 分类列表 */
+  categories?: Map<string, number>;
+  /** 标签列表 */
+  tags?: Map<string, number>;
+  /** 当前激活的分类（高亮） */
+  activeCategory?: string;
+  /** 当前激活的标签（高亮） */
+  activeTag?: string;
+}
+
+const {
+  title,
+  description = "果鸽的博客 — 文章列表",
+  posts,
+  currentPage,
+  totalPages,
+  totalPosts,
+  hasPrev,
+  hasNext,
+  basePath,
+  categories = new Map(),
+  tags = new Map(),
+  activeCategory,
+  activeTag,
+} = Astro.props;
+
+/** 页面标题后缀 */
+const pageTitle = currentPage > 1 ? `${title} — 第 ${currentPage} 页` : title;
+---
+
+<BaseLayout title={pageTitle} description={description}>
+  <div class="blog-page">
+    <!-- 页面头部 -->
+    <header class="blog-header">
+      <h1 class="blog-title">{title}</h1>
+      <p class="blog-subtitle">
+        共 {totalPosts} 篇文章
+        {totalPages > 1 && (
+          <span>· 第 {currentPage}/{totalPages} 页</span>
+        )}
+      </p>
+      {activeCategory && (
+        <a href="/blog" class="blog-filter-clear">
+          ✕ 清除分类筛选：{activeCategory}
+        </a>
+      )}
+      {activeTag && (
+        <a href="/blog" class="blog-filter-clear">
+          ✕ 清除标签筛选：#{activeTag}
+        </a>
+      )}
+    </header>
+
+    <div class="blog-layout">
+      <!-- 文章列表 -->
+      <section class="blog-posts">
+        {posts.length > 0 ? (
+          <div class="posts-grid">
+            {posts.map((post, index) => (
+              <PostCard post={post} index={index} />
+            ))}
+          </div>
+        ) : (
+          <div class="posts-empty">
+            <p>🐦 没有找到匹配的文章</p>
+            <a href="/blog" class="posts-empty-link">返回文章列表</a>
+          </div>
+        )}
+
+        <!-- 分页 -->
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          hasPrev={hasPrev}
+          hasNext={hasNext}
+          basePath={basePath}
+        />
+      </section>
+
+      <!-- 侧边栏 -->
+      <aside class="blog-sidebar">
+        {categories.size > 0 && (
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">📂 分类</h3>
+            <ul class="sidebar-list">
+              {[...categories.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, count]) => (
+                  <li>
+                    <a
+                      href={`/blog/category/${encodeURIComponent(name)}`}
+                      class:list={["sidebar-link", { active: activeCategory === name }]}
+                    >
+                      <span>{name}</span>
+                      <span class="sidebar-count">{count}</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        )}
+
+        {tags.size > 0 && (
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">🏷️ 标签</h3>
+            <div class="tag-cloud">
+              {[...tags.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, count]) => (
+                  <a
+                    href={`/blog/tag/${encodeURIComponent(name)}`}
+                    class:list={["tag-item", { active: activeTag === name }]}
+                    style={`font-size: ${Math.max(0.75, Math.min(1.1, 0.75 + count * 0.08))}rem`}
+                  >
+                    #{name}
+                    <span class="tag-count">{count}</span>
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+        )}
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .blog-page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .blog-header {
+    margin-bottom: 2rem;
+  }
+
+  .blog-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--color-theme-text);
+  }
+
+  .blog-subtitle {
+    font-size: 0.9375rem;
+    color: var(--color-theme-muted);
+    margin: 0;
+  }
+
+  .blog-filter-clear {
+    display: inline-block;
+    margin-top: 0.625rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    color: var(--color-theme-accent);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 10%, transparent);
+    text-decoration: none;
+    transition: background-color var(--transition-fast) ease;
+  }
+
+  .blog-filter-clear:hover {
+    background-color: color-mix(in srgb, var(--color-theme-accent) 18%, transparent);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .blog-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .posts-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--color-theme-muted);
+    font-size: 1.125rem;
+  }
+
+  .posts-empty-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--color-theme-accent);
+    text-decoration: underline;
+  }
+
+  .posts-empty-link:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* 侧边栏 */
+  .blog-sidebar {
+    position: sticky;
+    top: 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .sidebar-section {
+    padding: 1.25rem;
+    border-radius: var(--radius-card);
+    background-color: var(--color-theme-card);
+    border: 1px solid var(--color-theme-border);
+  }
+
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.875rem;
+    color: var(--color-theme-text);
+  }
+
+  .sidebar-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.625rem;
+    border-radius: var(--radius-base);
+    text-decoration: none;
+    color: var(--color-theme-text);
+    font-size: 0.875rem;
+    transition:
+      color var(--transition-fast) ease,
+      background-color var(--transition-fast) ease;
+  }
+
+  .sidebar-link:hover,
+  .sidebar-link.active {
+    color: var(--color-theme-accent);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 8%, transparent);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .sidebar-link.active {
+    font-weight: 600;
+  }
+
+  .sidebar-count {
+    font-size: 0.75rem;
+    color: var(--color-theme-muted);
+    background-color: color-mix(in srgb, var(--color-theme-muted) 10%, transparent);
+    padding: 0.0625rem 0.5rem;
+    border-radius: 9999px;
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--color-theme-accent) 8%, transparent);
+    color: var(--color-theme-muted);
+    text-decoration: none;
+    transition:
+      color var(--transition-fast) ease,
+      background-color var(--transition-fast) ease;
+  }
+
+  .tag-item:hover,
+  .tag-item.active {
+    color: var(--color-theme-accent);
+    background-color: color-mix(in srgb, var(--color-theme-accent) 15%, transparent);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .tag-item.active {
+    font-weight: 600;
+  }
+
+  .tag-count {
+    font-size: 0.6875rem;
+    opacity: 0.7;
+  }
+
+  @media (max-width: 900px) {
+    .blog-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-sidebar {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+
+    .sidebar-section {
+      flex: 1;
+      min-width: 240px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .blog-title {
+      font-size: 1.5rem;
+    }
+
+    .posts-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-sidebar {
+      flex-direction: column;
+    }
+
+    .sidebar-section {
+      min-width: unset;
+    }
+  }
+</style>
