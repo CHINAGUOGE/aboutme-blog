@@ -33,14 +33,15 @@
 
 /* ============================================================
    CSS 自定义属性（默认值 / 亮色模式）
+   color-extract.ts 生成的 theme.css 会覆盖以下值
    ============================================================ */
 :root {
-  /* 色彩引擎输出变量 — color-extract.ts 会覆盖这些值 */
+  /* 色彩引擎输出变量 — 默认 cute pink palette */
   --theme-hue: 340;
   --theme-sat: 60%;
   --theme-light: 95%;
 
-  /* 衍生色（默认 cute pink palette） */
+  /* 衍生色 */
   --color-bg: hsl(340, 60%, 95%);
   --color-card: hsl(340, 40%, 100%);
   --color-text: hsl(340, 30%, 25%);
@@ -55,17 +56,10 @@
 }
 
 /* ============================================================
-   暗色模式
+   色彩引擎输出（覆盖默认值）
+   由 color-extract.ts 自动生成，包含亮色 + 暗色模式
    ============================================================ */
-[data-theme="dark"] {
-  /* 暗色模式：降低饱和度 + 提升亮度，保持"可爱"不压抑 */
-  --color-bg: hsl(var(--theme-hue), 15%, 12%);
-  --color-card: hsl(var(--theme-hue), 12%, 18%);
-  --color-text: hsl(var(--theme-hue), 20%, 88%);
-  --color-accent: hsl(var(--theme-hue), 50%, 65%);
-  --color-muted: hsl(var(--theme-hue), 15%, 50%);
-  --color-border: hsl(var(--theme-hue), 10%, 25%);
-}
+@import "./theme.css";
 
 /* ============================================================
    全局基础样式

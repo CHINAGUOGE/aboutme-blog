@@ -5,7 +5,7 @@
   "private": true,
   "description": "果鸽的个人博客 — Oniichan Style",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "tsx scripts/color-extract.ts && astro dev",
     "build": "bash build.sh",
     "build:astro": "astro build",
     "preview": "astro preview",
