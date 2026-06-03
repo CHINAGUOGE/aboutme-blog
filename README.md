@@ -5,7 +5,7 @@
 <h1 align="center">果鸽的博客</h1>
 
 <p align="center">
-  <strong>别当欧尼酱了！</strong> — 一个极致可爱、丝滑交互的个人博客系统
+一个简约可爱、丝滑交互的个人博客系统
 </p>
 
 <p align="center">
