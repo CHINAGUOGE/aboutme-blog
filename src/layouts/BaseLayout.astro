@@ -14,6 +14,7 @@ import { siteConfig } from "@/config/site";
 import ThemeToggle from "@/components/ThemeToggle.svelte";
 import SearchBar from "@/components/search/SearchBar.svelte";
 import MusicPlayer from "@/components/music/MusicPlayer.svelte";
+import KeyboardHints from "@/components/music/KeyboardHints.svelte";
 import "@/styles/global.css";
 
 /** 页面级 props */
@@ -178,6 +179,9 @@ const canonicalURL = new URL(Astro.url.pathname, siteConfig.site);
         music={[]}
       />
     )}
+
+    <!-- 键盘快捷键提示（按 ? 键显示） -->
+    <KeyboardHints client:load />
   </body>
 </html>
 
