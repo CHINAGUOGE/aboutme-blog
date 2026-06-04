@@ -1,7 +1,7 @@
 # Cloudflare Pages 配置
 # 文档：https://developers.cloudflare.com/pages/
 
-name = "guogepige-blog"
+name = "aboutme-blog"
 compatibility_date = "2024-06-01"
 
 # Pages 项目输出目录
