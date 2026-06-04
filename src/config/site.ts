@@ -243,13 +243,13 @@ export const siteConfig = siteConfigSchema.parse({
   },
 
   comment: {
-    enabled: false,
-    repo: "",
-    repoId: "",
+    enabled: true,
+    repo: "CHINAGUOGE/aboutme-blog",
+    repoId: "R_kgDOSwTwUw",
     category: "Announcements",
-    categoryId: "",
+    categoryId: "DIC_kwDOSwTwU84C-f4j",
     mapping: "pathname",
-    strict: true,
+    strict: false,
     reactionsEnabled: true,
     emitMetadata: false,
     inputPosition: "top",
