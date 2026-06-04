@@ -203,7 +203,7 @@ export type TimelineEvent = z.infer<typeof timelineEventSchema>;
 
 export const siteConfig = siteConfigSchema.parse({
   title: "果鸽的博客",
-  subtitle: "咕咕咕咕咕咕",
+  subtitle: "Crossing the night,Until the light.",
   description: "果鸽的个人博客",
   lang: "zh-CN",
   site: "https://me.51320721.xyz",
